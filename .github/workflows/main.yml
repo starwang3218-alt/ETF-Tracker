@@ -41,7 +41,13 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "Quant Bot"
-        git add data/Master_Holdings_*.csv
-        git add data/Delta_Report_*.csv
-        git commit -m "🤖 自动更新: 机构持仓底牌与异动监控" || echo "今天机构没有动作"
+        
+        # 1. 尝试把 data 文件夹下所有符合白名单的 CSV 都添加进来
+        # 即使 Delta 报告没生成，只要有 Master_Holdings 也会被添加
+        git add data/*.csv || echo "没有发现新的 CSV 文件"
+        
+        # 2. 提交更改。|| true 的作用是：即使没有什么可提交的（比如数据没变化），也不要让程序崩溃
+        git commit -m "🤖 自动更新: 机构持仓底牌与异动监控" || echo "今天数据无变化，跳过提交"
+        
+        # 3. 推送回仓库
         git push
