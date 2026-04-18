@@ -1,0 +1,152 @@
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlk.xlsx    科技XLK
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlf.xlsx     金融XLF
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlv.xlsx     医疗XLV
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xle.xlsx     能源XLE
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xly.xlsx     消费电子/非必需XLY
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlc.xlsx     通信服务XLC
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xli.xlsx      工业XLI
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlp.xlsx     日常消费/必需XLP
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlu.xlsx     公用事业XLU
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlb.xlsx     原材料XLB
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlre.xlsx    房地产XLRE
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xbi.xlsx     生物技术XBI
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xrt.xlsx       xrt零售  
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xsd.xlsx      xsd半导体
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xsw.xlsx     xsw软件
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-deco.xlsx      DECO数字资产生态系统 
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-tekx.xlsx        TEKX变革性科技加速器
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xntk.xlsx         XNTK科技
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-spsm.xlsx          SPSM小型股
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-mdyg.xlsx           MDYG中型成长股
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-mdyv.xlsx             MDYV中型市值价值
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-slyg.xlsx              SLYG小型股600成长
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-cnrg.xlsx          CNRG清洁能源
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-hail.xlsx           HAIL智能出行  
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-esix.xlsx           ESIX标普小型股
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xar.xlsx            XAR航空航天与国防
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-kbe.xlsx           KBE银行
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xbi.xlsx             XBI生物科技
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xme.xlsx           XME金属与矿业
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xop.xlsx            XOP石油天然气
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xsd.xlsx             XSD半导体
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xsw.xlsx            XSW软件与服务
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-lglv.xlsx            LGLV美国大盘低波动率指数
+https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-smlv.xlsx            SMLV美国小型股低波动率指数
+https://www.vaneck.com/us/en/investments/rare-earth-strategic-metals-etf-remx/downloads/holdings/       REMX 稀土/战略金属
+https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/downloads/holdings/                            SMH 半导体
+https://www.vaneck.com/us/en/investments/biotech-etf-bbh/downloads/holdings/                                         bbh生物科技
+https://www.vaneck.com/us/en/investments/communication-services-trusector-etf-truc/downloads/holdings/               truc通信服务
+https://www.vaneck.com/us/en/investments/consumer-discretionary-trusector-etf-trud/downloads/holdings/               trud可选消费品
+https://www.vaneck.com/us/en/investments/copper-green-metals-etf-emet/downloads/holdings/                         emet铜和绿色金属 
+https://www.vaneck.com/us/en/investments/digital-native-economy-etf-genz/downloads/holdings/                     genz 数字原生经济 
+https://www.vaneck.com/us/en/investments/digital-transformation-etf-dapp/downloads/holdings/                       dapp数字化转型
+https://www.vaneck.com/us/en/investments/enviromental-services-etf-evx/downloads/holdings/                           evx环境服务
+https://www.vaneck.com/us/en/investments/fabless-semiconductor-etf-smhx/downloads/holdings/                     smhx无晶圆半导体 
+https://www.vaneck.com/us/en/investments/financials-trusector-etf-truf/downloads/holdings/                              truf金融
+https://www.vaneck.com/us/en/investments/healthcare-trusector-etf-truh/downloads/holdings/                           truh医疗保健
+https://www.vaneck.com/us/en/investments/low-carbon-energy-etf-smog/downloads/holdings/                          smog低碳能源
+https://www.vaneck.com/us/en/investments/oil-services-etf-oih/downloads/holdings/                                            oih石油服务
+https://www.vaneck.com/us/en/investments/onchain-economy-etf-node/downloads/holdings/                              node链上经济 
+https://www.vaneck.com/us/en/investments/pharmaceutical-etf-pph/downloads/holdings/                                     pph制药
+https://www.vaneck.com/us/en/investments/robotics-etf-ibot/downloads/holdings/                                                ibot机器人  
+https://www.vaneck.com/us/en/investments/technology-trusector-etf-trut/downloads/holdings/                            trut科技
+https://www.vaneck.com/us/en/investments/uranium-nuclear-energy-etf-nlr/downloads/holdings/                         nlr铀和核能
+https://www.vaneck.com/us/en/investments/video-gaming-esports-etf-espo/downloads/holdings/                         espo视频游戏和电子竞技
+https://www.blackrock.com/us/individual/products/239705/fund/1464253357814.ajax?fileType=csv&fileName=SOXX_holdings&dataType=fund           SOXX 半导体
+https://www.blackrock.com/us/financial-professionals/products/239502/ishares-us-aerospace-defense-etf/1500962885783.ajax?fileType=csv&fileName=ITA_holdings&dataType=fund            ITA 航空航天与国防
+https://www.blackrock.com/us/individual/products/239655/ishares-msci-global-metals-mining-producers-etf/1464253357814.ajax?fileType=csv&fileName=PICK_holdings&dataType=fund     PICK全球金属与采矿
+https://www.blackrock.com/us/individual/products/294315/fund/1464253357814.ajax?fileType=csv&fileName=IFRA_holdings&dataType=fund                                   IFRA 美国基础设施
+https://www.blackrock.com/us/individual/products/307332/fund/1464253357814.ajax?fileType=csv&fileName=IDRV_holdings&dataType=fund                                   IDRV自驱汽车与科技
+https://www.blackrock.com/us/individual/products/239699/fund/1464253357814.ajax?fileType=csv&fileName=IBB_holdings&dataType=fund                                      IBB纳斯达克生物技术
+https://www.blackrock.com/us/individual/products/251616/ishares-msci-usa-value-factor-etf/1464253357814.ajax?fileType=csv&fileName=VLUE_holdings&dataType=fund        VLUE美国价值因子
+https://www.blackrock.com/us/individual/products/251614/ishares-msci-usa-momentum-factor-etf/1464253357814.ajax?fileType=csv&fileName=MTUM_holdings&dataType=fund      MTUM美国动量因子
+https://www.blackrock.com/us/financial-professionals/products/256101/ishares-msci-usa-quality-factor-etf/1500962885783.ajax?fileType=csv&fileName=QUAL_holdings&dataType=fund   QUAL美国质量因子
+https://www.blackrock.com/us/individual/products/239695/ishares-msci-usa-minimum-volatility-etf/1464253357814.ajax?fileType=csv&fileName=USMV_holdings&dataType=fund              USMV美国最小波动率
+https://www.blackrock.com/us/individual/products/307283/fund/1464253357814.ajax?fileType=csv&fileName=DYNF_holdings&dataType=fund                                        DYNF美国股票因子轮动主动型
+https://www.blackrock.com/us/individual/products/239712/ishares-russell-2000-value-etf/1464253357814.ajax?fileType=csv&fileName=IWN_holdings&dataType=fund       IWN罗素 2000 价值
+https://www.blackrock.com/us/individual/products/239693/ishares-msci-usa-etf/1464253357814.ajax?fileType=csv&fileName=EUSA_holdings&dataType=fund                     EUSA美国等权重
+https://www.blackrock.com/us/individual/products/239716/ishares-microcap-etf/1464253357814.ajax?fileType=csv&fileName=IWC_holdings&dataType=fund                       IWC微盘股
+https://www.blackrock.com/us/individual/products/239565/ishares-iboxx-high-yield-corporate-bond-etf/1464253357814.ajax?fileType=csv&fileName=HYG_holdings&dataType=fund     HYG高收益公司债
+https://www.blackrock.com/us/individual/products/239566/ishares-iboxx-investment-grade-corporate-bond-etf/1464253357814.ajax?fileType=csv&fileName=LQD_holdings&dataType=fund   投资级公司债
+https://www.blackrock.com/us/individual/products/239710/ishares-russell-2000-etf/1464253357814.ajax?fileType=csv&fileName=IWM_holdings&dataType=fund                                                IWM罗素小盘股2000指数
+https://www.blackrock.com/us/individual/products/239522/ishares-us-technology-etf/1464253357814.ajax?fileType=csv&fileName=IYW_holdings&dataType=fund                            IYW美国科技   
+https://www.blackrock.com/us/individual/products/239717/ishares-russell-midcap-growth-etf/1464253357814.ajax?fileType=csv&fileName=IWP_holdings&dataType=fund              IWP中型成长股
+https://www.blackrock.com/us/individual/products/239627/ishares-msci-eafe-smallcap-etf/1464253357814.ajax?fileType=csv&fileName=SCZ_holdings&dataType=fund                    SCZ小型股
+https://www.blackrock.com/us/financial-professionals/products/339081/fund/1500962885783.ajax?fileType=csv&fileName=BAI_holdings&dataType=fund                                           BAI创新与科技
+https://www.blackrock.com/us/individual/products/239769/ishares-north-american-tech-etf/1464253357814.ajax?fileType=csv&fileName=IGM_holdings&dataType=fund                   IGM拓展科技行业
+https://www.blackrock.com/us/individual/products/325384/fund/1464253357814.ajax?fileType=csv&fileName=THRO_holdings&dataType=fund                                                             THRO美国主题轮动
+https://www.blackrock.com/us/individual/products/239775/ishares-sp-smallcap-600-value-etf/1464253357814.ajax?fileType=csv&fileName=IJS_holdings&dataType=fund                    IJS小型股600价值
+https://www.blackrock.com/us/individual/products/239773/ishares-sp-smallcap-600-growth-etf/1464253357814.ajax?fileType=csv&fileName=IJT_holdings&dataType=fund                 IJT标普小型股600价值
+https://www.blackrock.com/us/individual/products/297905/fund/1464253357814.ajax?fileType=csv&fileName=ARTY_holdings&dataType=fund                                                               ARTY人工智能与科技
+https://www.blackrock.com/us/individual/products/239738/ishares-global-clean-energy-etf/1464253357814.ajax?fileType=csv&fileName=ICLN_holdings&dataType=fund                      ICLN全球清洁能源
+https://www.blackrock.com/us/individual/products/239514/ishares-us-industrials-etf/1464253357814.ajax?fileType=csv&fileName=IYJ_holdings&dataType=fund                                     IYJ美国工业
+https://www.blackrock.com/us/individual/products/239507/ishares-us-energy-etf/1464253357814.ajax?fileType=csv&fileName=IYE_holdings&dataType=fund                                          IYE美国能源
+https://www.blackrock.com/us/individual/products/239503/ishares-us-basic-materials-etf/1464253357814.ajax?fileType=csv&fileName=IYM_holdings&dataType=fund                            IYM美国基础材料
+https://www.blackrock.com/us/individual/products/239716/ishares-microcap-etf/1464253357814.ajax?fileType=csv&fileName=IWC_holdings&dataType=fund                                           IWC微型股
+https://www.blackrock.com/us/individual/products/239587/ishares-morningstar-smallcap-growth-etf/1464253357814.ajax?fileType=csv&fileName=ISCG_holdings&dataType=fund         ISCG小型股成长
+https://www.blackrock.com/us/individual/products/239517/ishares-us-oil-gas-exploration-production-etf/1464253357814.ajax?fileType=csv&fileName=IEO_holdings&dataType=fund     IEO美国天然气勘探与生产
+https://www.blackrock.com/us/individual/products/239518/ishares-us-oil-equipment-services-etf/1464253357814.ajax?fileType=csv&fileName=IEZ_holdings&dataType=fund                   IEZ美国石油设备及服务
+https://www.blackrock.com/us/individual/products/332280/fund/1464253357814.ajax?fileType=csv&fileName=ICOP_holdings&dataType=fund                                                                    ICOP铜及金属矿业
+https://www.blackrock.com/us/individual/products/312046/fund/1464253357814.ajax?fileType=csv&fileName=TECB_holdings&dataType=fund                                                                     TECB美国科技突破多行业
+https://www.blackrock.com/us/individual/products/239515/ishares-us-insurance-etf/1464253357814.ajax?fileType=csv&fileName=IAK_holdings&dataType=fund                                          IAK美国保险
+https://www.blackrock.com/us/individual/products/239770/ishares-north-american-techmultimedia-networking-etf/1464253357814.ajax?fileType=csv&fileName=IDGT_holdings&dataType=fund    IDGT美国数字基础设施及房地产
+https://www.blackrock.com/us/individual/products/239653/ishares-msci-global-energy-producers-etf/1464253357814.ajax?fileType=csv&fileName=POWR_holdings&dataType=fund           POWR美国电力基础设施
+https://www.blackrock.com/us/individual/products/315920/fund/1464253357814.ajax?fileType=csv&fileName=XJR_holdings&dataType=fund                                   XJR标普小型股
+https://www.blackrock.com/us/individual/products/350089/fund/1464253357814.ajax?fileType=csv&fileName=SQLT_holdings&dataType=fund                                 SQLT美国小型股质量因子
+https://www.blackrock.com/us/individual/products/331244/fund/1464253357814.ajax?fileType=csv&fileName=ETEC_holdings&dataType=fund                                  ETEC突破性环境解决方案
+https://www.blackrock.com/us/individual/products/343529/fund/1464253357814.ajax?fileType=csv&fileName=IDEF_holdings&dataType=fund                                   IDEF国防工业主动型
+https://assets.globalxetfs.com/funds/holdings/botz_full-holdings_20260417.csv     人工智能与机器人botz
+https://assets.globalxetfs.com/funds/holdings/eart_full-holdings_20260417.csv      稀土及关键材料EART
+https://assets.globalxetfs.com/funds/holdings/shld_full-holdings_20260417.csv      国防科技 SHLD
+https://assets.globalxetfs.com/funds/holdings/krop_full-holdings_20260417.csv     农业和食品KROP
+https://assets.globalxetfs.com/funds/holdings/lit_full-holdings_20260417.csv          LIT 锂电池
+https://assets.globalxetfs.com/funds/holdings/ura_full-holdings_20260417.csv        铀矿核能ura
+https://assets.globalxetfs.com/funds/holdings/aiq_full-holdings_20260417.csv        人工智能与科技AIQ
+https://assets.globalxetfs.com/funds/holdings/copx_full-holdings_20260417.csv        t铜矿商COPX
+https://assets.globalxetfs.com/funds/holdings/sil_full-holdings_20260417.csv          白银SIL        
+https://assets.globalxetfs.com/funds/holdings/mlpx_full-holdings_20260417.csv      能源基础设施MLPX
+https://assets.globalxetfs.com/funds/holdings/dtcr_full-holdings_20260417.csv        数据中心及数字基础设施DTCR
+https://assets.globalxetfs.com/funds/holdings/sdiv_full-holdings_20260417.csv          超级股息SDIV    
+https://assets.globalxetfs.com/funds/holdings/bug_full-holdings_20260417.csv          网络安全BUG       
+https://assets.globalxetfs.com/funds/holdings/zap_full-holdings_20260417.csv           美国电器化ZAP
+https://assets.globalxetfs.com/funds/holdings/driv_full-holdings_20260417.csv           自动驾驶及电动汽车DRIV
+https://assets.globalxetfs.com/funds/holdings/bkch_full-holdings_20260417.csv          区块链BKCH
+https://assets.globalxetfs.com/funds/holdings/djia_full-holdings_20260417.csv 		DJIA道琼斯30备兑看涨期权
+https://assets.globalxetfs.com/funds/holdings/chiq_full-holdings_20260417.csv 		CHIQ中国可选消费
+https://assets.globalxetfs.com/funds/holdings/goex_full-holdings_20260417.csv 		GOEX黄金勘探者
+https://assets.globalxetfs.com/funds/holdings/qylg_full-holdings_20260417.csv 		QYLG纳斯达克 100®备兑看涨期权及成长型
+https://assets.globalxetfs.com/funds/holdings/krma_full-holdings_20260417.csv 		KRMA有意识企业
+https://assets.globalxetfs.com/funds/holdings/miln_full-holdings_20260417.csv 		MILN千禧一代消费者
+https://assets.globalxetfs.com/funds/holdings/socl_full-holdings_20260417.csv 		SOCL社交媒体 ETF
+https://assets.globalxetfs.com/funds/holdings/agng_full-holdings_20260417.csv 		AGNG老龄化人口
+https://assets.globalxetfs.com/funds/holdings/hero_full-holdings_20260417.csv 		HERO视频游戏与电竞
+https://assets.globalxetfs.com/funds/holdings/hydr_full-holdings_20260417.csv 		HYDR氢能
+https://assets.globalxetfs.com/funds/holdings/lngx_full-holdings_20260417.csv 		LNGX美国天然气
+https://assets.globalxetfs.com/funds/holdings/gxpc_full-holdings_20260417.csv 		GXPC通信服务
+https://assets.globalxetfs.com/funds/holdings/xylg_full-holdings_20260417.csv 		XYLG标普 500备兑看涨期权及成长型
+https://assets.globalxetfs.com/funds/holdings/gxpt_full-holdings_20260417.csv 		GXPTMSCI 信息技术
+https://assets.globalxetfs.com/funds/holdings/emc_full-holdings_20260417.csv 		EMC新兴市场消费品
+https://assets.globalxetfs.com/funds/holdings/gnom_full-holdings_20260417.csv 		GNOM基因组学与生物技术
+https://assets.globalxetfs.com/funds/holdings/eart_full-holdings_20260417.csv 		EART稀土及关键材料
+https://assets.globalxetfs.com/funds/holdings/chpx_full-holdings_20260417.csv 		CHPXAI 半导体&量子
+https://assets.globalxetfs.com/funds/holdings/ebiz_full-holdings_20260417.csv 		EBIZ电子商务
+https://assets.globalxetfs.com/funds/holdings/bits_full-holdings_20260417.csv 		BITS区块链与比特币策略
+https://assets.globalxetfs.com/funds/holdings/mlpd_full-holdings_20260417.csv 		MLPD能源基础设施备兑看涨期权
+https://assets.globalxetfs.com/funds/holdings/ctec_full-holdings_20260417.csv 		CTEC气候科技
+https://assets.globalxetfs.com/funds/holdings/flow_full-holdings_20260417.csv 		FLOW美国现金流之王100
+https://assets.globalxetfs.com/funds/holdings/heal_full-holdings_20260417.csv 		HEAL健康科技 ETF
+https://assets.globalxetfs.com/funds/holdings/aqwa_full-holdings_20260417.csv 		AQWA清洁水
+https://assets.globalxetfs.com/funds/holdings/qrmi_full-holdings_20260417.csv 		QRMI纳斯达克 100®风险管理收益
+https://assets.globalxetfs.com/funds/holdings/tylg_full-holdings_20260417.csv 		TYLG信息技术类备兑看涨期权及成长型
+https://assets.globalxetfs.com/funds/holdings/bccc_full-holdings_20260417.csv 		BCCC比特币备兑看涨期权
+https://assets.globalxetfs.com/funds/holdings/krop_full-holdings_20260417.csv 		KROP农业科技与食品创新
+https://assets.globalxetfs.com/funds/holdings/auau_full-holdings_20260417.csv 		AUAU黄金矿业
+https://assets.globalxetfs.com/funds/holdings/rylg_full-holdings_20260417.csv 		RYLG罗素 2000 备兑看涨期权及成长型
+https://assets.globalxetfs.com/funds/holdings/dylg_full-holdings_20260417.csv 		DYLG道琼斯 30®备兑看涨期权及成长型
+https://assets.globalxetfs.com/funds/holdings/orbx_full-holdings_20260417.csv 		ORBX 太空科技
+https://assets.globalxetfs.com/funds/holdings/egle_full-holdings_20260417.csv 		EGLE标普 500®美国营收领先
+https://assets.globalxetfs.com/funds/holdings/btrn_full-holdings_20260417.csv 		BTRN比特币趋势策略
+https://assets.globalxetfs.com/funds/holdings/gxpe_full-holdings_20260417.csv 		GXPE能源
+https://assets.globalxetfs.com/funds/holdings/edgq_full-holdings_20260417.csv 		EDGQ纳斯达克收益优势
+https://assets.globalxetfs.com/funds/holdings/flag_full-holdings_20260417.csv 		FLAG标普 500美国市场领导者前 50 强
+https://assets.globalxetfs.com/funds/holdings/edgx_full-holdings_20260417.csv 		EDGX美国 500 指数收益优势
