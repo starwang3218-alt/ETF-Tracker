@@ -1,0 +1,47 @@
+name: Daily ETF Quant Pipeline
+
+on:
+  schedule:
+    # 每天 UTC 时间 22:30 自动运行 (夏令时对应美东盘后 18:30)
+    # 也就是星期一到星期五，美股收盘且机构更新数据后
+    - cron: '30 22 * * 1-5'
+  workflow_dispatch: # 这个选项让你能在网页上手动点一个按钮直接运行
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 抓取仓库代码与历史数据
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 
+
+    - name: ⚙️ 配置 Python 环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: 📦 安装核心依赖包
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: 🚀 执行量化处理流 (全自动四步走)
+      run: |
+        python step1_download.py
+        python step2_clean.py
+        python step3_aggregate.py
+        python step4_calculate_delta.py
+
+    - name: 💾 将异动报告推送回 GitHub
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "Quant Bot"
+        git add data/Master_Holdings_*.csv
+        git add data/Delta_Report_*.csv
+        git commit -m "🤖 自动更新: 机构持仓底牌与异动监控" || echo "今天机构没有动作"
+        git push
