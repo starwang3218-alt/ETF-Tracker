@@ -27,6 +27,7 @@ jobs:
       - name: 安装 Python 包与 Playwright 内核
         run: |
           pip install -r requirements_holdings.txt
+          pip install pandas   # <--- 【修复错误 1：强制安装 pandas】
           playwright install --with-deps chromium
           mkdir -p downloads
 
