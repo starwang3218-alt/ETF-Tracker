@@ -1,121 +1,78 @@
 import pandas as pd
 import os
-import io
+import glob
+import json
 
-RAW_DIR = 'data/raw'
-CLEANED_DIR = 'data/cleaned'
-os.makedirs(CLEANED_DIR, exist_ok=True)
+# 修改为你实际的输入输出目录
+INPUT_DIR = 'downloads'
+OUTPUT_DIR = 'data/cleaned'
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-TICKER_ALIASES = ['ticker', 'symbol', 'holdings ticker', 'identifier']
-SHARES_ALIASES = ['shares', 'share_hold', 'shares held', 'shares_held', 'qty', 'quantity']
-
-def is_excel_file(file_path):
-    """
-    【核心透视逻辑】：不看后缀名，直接读取文件底层的二进制指纹
-    真正的 Excel 文件是以 'PK' (ZIP结构) 开头的。
-    """
-    try:
-        with open(file_path, 'rb') as f:
-            return f.read(4) == b'PK\x03\x04'
-    except:
-        return False
-
-def clean_data():
-    print("🧹 启动终极靶向清洗：底层文件类型探测 + 智能解析...")
+def unified_clean():
+    # 【修复1】使用 **/*.csv 递归扫描，确保能抓到 downloads/invesco/ 和 ishares/ 下的所有文件
+    all_files = glob.glob(os.path.join(INPUT_DIR, '**/*.csv'), recursive=True) + \
+                glob.glob(os.path.join(INPUT_DIR, '**/*.bin'), recursive=True)
     
-    files = [f for f in os.listdir(RAW_DIR) if f.endswith(('.csv', '.xlsx'))]
-    if not files:
-        print("❌ data/raw 文件夹为空。")
-        return
+    print(f"📊 扫描到 {len(all_files)} 个原始文件，开始深度清洗...")
 
-    success, fail = 0, 0
-    
-    for filename in files:
-        file_path = os.path.join(RAW_DIR, filename)
-        base_name = os.path.splitext(filename)[0]
+    for file_path in all_files:
+        filename = os.path.basename(file_path)
+        # 自动识别 Provider
+        folder_name = os.path.basename(os.path.dirname(file_path)).lower()
+        provider = 'Invesco' if 'invesco' in folder_name else 'iShares'
+        etf_symbol = filename.replace('.csv', '').replace('.bin', '').split('_')[0].upper()
         
         try:
-            df = None
+            # 1. 预读判断格式
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                first_char = f.read(1).strip()
             
-            # --- 1. 真实身份鉴定 ---
-            # 如果后缀是xlsx，或者虽然是csv但底层其实是Excel...
-            if filename.endswith('.xlsx') or is_excel_file(file_path):
-                # 强制用 openpyxl (Excel引擎) 解析这个伪装者
-                for skip in range(15):
-                    try:
-                        temp_df = pd.read_excel(file_path, skiprows=skip, nrows=0, engine='openpyxl')
-                        cols = [str(c).lower().strip() for c in temp_df.columns]
-                        if any(t in cols for t in TICKER_ALIASES) and any(s in cols for s in SHARES_ALIASES):
-                            df = pd.read_excel(file_path, skiprows=skip, engine='openpyxl')
-                            break
-                    except:
-                        continue
-            
-            # --- 2. 如果确实是文本文件 (CSV / TSV) ---
+            if first_char == '{': # Invesco 的 JSON 格式
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                if 'holdings' not in data: continue
+                df = pd.DataFrame(data['holdings'])
+                df.rename(columns={'ticker': 'Ticker', 'units': 'Shares', 'marketValueBase': 'Market_Value'}, inplace=True)
             else:
+                # 【修复2】动态扫描表头行号，专门对付 iShares 第 25 行的问题
+                header_row = 0
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                    content = f.read()
+                    for i, line in enumerate(f):
+                        if 'Ticker' in line or 'Quantity' in line:
+                            header_row = i
+                            break
                 
-                lines = content.split('\n')
-                header_idx = -1
+                # 【修复3】thousands=',' 自动移除 iShares 截图中的数字逗号
+                df = pd.read_csv(file_path, skiprows=header_row, thousands=',')
+                df.columns = df.columns.str.strip()
                 
-                for i, line in enumerate(lines[:30]):
-                    low_line = line.lower()
-                    if any(t in low_line for t in TICKER_ALIASES) and any(s in low_line for s in SHARES_ALIASES):
-                        header_idx = i
-                        break
-                
-                if header_idx != -1:
-                    # 智能识别分隔符：应对把 Tab 伪装成逗号的情况
-                    header_line = lines[header_idx]
-                    delimiter = '\t' if '\t' in header_line else (';' if ';' in header_line else ',')
-                    
-                    df = pd.read_csv(
-                        io.StringIO(content), 
-                        skiprows=header_idx, 
-                        sep=delimiter, 
-                        on_bad_lines='skip', 
-                        engine='python'
-                    )
-
-            # --- 3. 错误拦截 ---
-            if df is None or df.empty:
-                print(f"   ⚠️ 跳过 {filename}: 找不到符合条件的数据区。")
-                fail += 1
-                continue
-
-            # --- 4. 提取与标准化 ---
-            df.columns = [str(c).lower().strip() for c in df.columns]
+                # 【修复4】字典映射：把 Quantity 强制对齐为 Shares
+                col_mapping = {
+                    'Quantity': 'Shares', 'Share/ Par': 'Shares',
+                    'Market Value': 'Market_Value', 'MarketValue': 'Market_Value',
+                    'Weight': 'Weight_Pct', '% TNA': 'Weight_Pct'
+                }
+                df.rename(columns=lambda x: col_mapping.get(x, x), inplace=True)
             
-            actual_ticker_col = next((c for c in df.columns if c in TICKER_ALIASES), None)
-            actual_shares_col = next((c for c in df.columns if c in SHARES_ALIASES), None)
+            # 2. 字段标准化处理
+            core_cols = ['Ticker', 'Name', 'Shares', 'Market_Value']
+            df = df[[c for c in core_cols if c in df.columns]].copy()
+            df = df.dropna(subset=['Ticker']) # 过滤页脚杂质
             
-            if not actual_ticker_col or not actual_shares_col:
-                print(f"   ⚠️ 跳过 {filename}: 匹配列名失败 -> 当前列名为 {list(df.columns)[:5]}")
-                fail += 1
-                continue
-                
-            keep_cols = {actual_ticker_col: 'ticker', actual_shares_col: 'shares'}
-            clean_df = df[list(keep_cols.keys())].rename(columns=keep_cols)
+            # 强制清理数字中的符号 ($ 等) 并转为浮点数
+            for col in ['Shares', 'Market_Value']:
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col].astype(str).replace(r'[$,]', '', regex=True), errors='coerce').fillna(0)
 
-            # 强效清洗
-            clean_df = clean_df.dropna(subset=['ticker'])
-            clean_df['shares'] = clean_df['shares'].astype(str).str.replace(',', '').str.replace('"', '')
-            clean_df['shares'] = pd.to_numeric(clean_df['shares'], errors='coerce')
-            clean_df = clean_df.dropna(subset=['shares'])
+            df['Source_ETF'] = etf_symbol
+            df['Provider'] = provider
             
-            # --- 5. 存储 ---
-            save_path = os.path.join(CLEANED_DIR, f"{base_name}.csv")
-            clean_df.to_csv(save_path, index=False, encoding='utf-8-sig')
-            print(f"✅ {base_name}: 洗出 {len(clean_df)} 只持仓股！")
-            success += 1
+            out_path = os.path.join(OUTPUT_DIR, f"{etf_symbol}_cleaned.csv")
+            df.to_csv(out_path, index=False)
+            print(f"    ✅ 已处理: {etf_symbol} ({provider})")
             
         except Exception as e:
-            print(f"   ❌ {filename} 解析异常: {e}")
-            fail += 1
-
-    print("-" * 40)
-    print(f"🎉 提取结束！成功战胜各种伪装，洗出 {success} 个标准文件。")
+            print(f"    ❌ 失败 [{filename}]: {e}")
 
 if __name__ == "__main__":
-    clean_data()
+    unified_clean()
