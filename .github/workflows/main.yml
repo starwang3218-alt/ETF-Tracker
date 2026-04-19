@@ -1,11 +1,9 @@
 name: Daily ETF Quant Pipeline
 
 on:
-  schedule:
-    # 每天 UTC 时间 22:30 自动运行 (夏令时对应美东盘后 18:30)
-    # 也就是星期一到星期五，美股收盘且机构更新数据后
-    - cron: '30 22 * * 1-5'
-  workflow_dispatch: # 这个选项让你能在网页上手动点一个按钮直接运行
+  # schedule:
+  #   - cron: '30 22 * * 1-5'  # 暂时关掉自动运行，防止半夜报错
+  workflow_dispatch:          # 仍然保留手动测试按钮
 
 permissions:
   contents: write
