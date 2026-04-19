@@ -23,13 +23,12 @@ jobs:
 
       - name: 3. 安装依赖和浏览器内核
         run: |
-          pip install requests beautifulsoup4 lxml playwright pandas
+          pip install requests beautifulsoup4 lxml playwright pandas openpyxl
           playwright install chromium
 
-      - name: 4. 第一阶段：处理景顺数据 (下载 + 清洗)
+      - name: 4. 全量下载 (景顺+其他机构交错运行)
         run: |
-          python download_holdings_v3.py -i 景顺每日ETF下载地址.txt -o downloads/invesco
-          python step2_clean_invesco.py
+          python download_holdings_v3.py -i 每日ETF下载地址.txt -o downloads/ --overwrite
         continue-on-error: true
 
       - name: 5. 第二阶段：处理其他机构 (下载 + 清洗)
