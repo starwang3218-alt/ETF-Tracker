@@ -1,0 +1,90 @@
+name: ETF 数据全链路分析工作流
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # 每天定时运行
+  workflow_dispatch:     # 允许你手动点击运行
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # ==========================================
+      # 第一步：准备环境与依赖
+      # ==========================================
+      - name: Step 1 - 环境与代码检出
+        uses: actions/checkout@v4
+
+      - name: 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          
+      - name: 安装 Python 包与 Playwright 内核
+        run: |
+          pip install -r requirements_holdings.txt
+          playwright install --with-deps chromium
+          mkdir -p downloads
+
+      # ==========================================
+      # 第二步：下载景顺数据 (使用你的原版命令)
+      # ==========================================
+      - name: Step 2 - 下载景顺 ETF
+        run: |
+          if [ -f "景顺每日ETF下载地址.txt" ]; then
+            echo "正在执行景顺体系下载..."
+            
+            # 【完美执行你的命令】
+            python download_holdings_v3.py -i 景顺每日ETF下载地址.txt -o downloads --overwrite
+            
+            # 扫描 downloads 目录，把 .bin 强行改成 .csv
+            if ls downloads/*.bin 1> /dev/null 2>&1; then
+              echo "检测到景顺的 .bin 伪装文件，正在修复后缀为 .csv..."
+              for f in downloads/*.bin; do
+                mv "$f" "${f%.bin}.csv"
+              done
+            fi
+          else
+            echo "未找到 景顺每日ETF下载地址.txt，跳过本步骤。"
+          fi
+
+      # ==========================================
+      # 第三步：下载其他家数据
+      # ==========================================
+      - name: Step 3 - 下载其他供应商 ETF
+        run: |
+          if [ -f "其他每日ETF下载地址.txt" ]; then
+            echo "正在执行其他供应商下载..."
+            
+            # 同样输出到 downloads 文件夹
+            python download_holdings_v3.py -i 其他每日ETF下载地址.txt -o downloads --overwrite
+          else
+            echo "未找到 其他每日ETF下载地址.txt，跳过本步骤。"
+          fi
+
+      # ==========================================
+      # 第四步：数据清洗
+      # ==========================================
+      - name: Step 4 - 数据清洗与标准化
+        run: |
+          echo "执行清洗脚本..."
+          # 运行我们刚刚写好的脚本，依赖 pandas
+          python step4_clean.py
+
+      # ==========================================
+      # 第五步：将新数据传回你的仓库
+      # ==========================================
+      - name: Step 5 - 提交并推送最新数据
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # 把 downloads(原文件) 和 data/cleaned(清洗后文件) 都提交上去
+          git add downloads/
+          git add data/
+          git commit -m "Auto-update & Clean ETF Data: $(date +'%Y-%m-%d')" || exit 0
+          git push
