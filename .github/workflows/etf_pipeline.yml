@@ -44,27 +44,20 @@ jobs:
           python step3_aggregate.py
           python step4_calculate_delta.py
 
-      - name: 7. 提交最新数据和报告到 GitHub
+      - name: 7. 终极防爆破：智能提交与推送
         run: |
+          # 1. 设置机器人身份
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add data/ 最终合并持仓报告.csv Master_Holdings_*.csv 全市场_ETF_基础持仓宽表.csv
-          git commit -m "Auto-update: 每日机构持仓报告与调仓监控更新" || echo "今天的数据没有变化，无需提交"
-          git push
-      - name: Commit and Push changes
-      run: |
-        # 1. 设置机器人身份
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        # 2. 把所有变化（包括新生成的报告、以及被清理脚本删掉的旧数据）全部抓取
-        git add .
-        
-        # 3. 智能判断：如果真有变化才提交，没变化就平稳跳过
-        if ! git diff --cached --quiet; then
-          git commit -m "📊 机构持仓自动更新: $(date +'%Y-%m-%d %H:%M')"
-          git push
-          echo "✅ 数据已成功推送到仓库！"
-        else
-          echo "⚠️ 今日无数据变化或下载失败，跳过 Git 提交，防止 128 报错闪退。"
-        fi
+          
+          # 2. 把所有变化（包括新生成的报告、以及被清理脚本删掉的旧数据）全部抓取
+          git add .
+          
+          # 3. 智能判断：如果真有变化才提交，没变化就平稳跳过
+          if ! git diff --cached --quiet; then
+            git commit -m "📊 机构持仓自动更新: $(date +'%Y-%m-%d %H:%M')"
+            git push
+            echo "✅ 数据已成功推送到仓库！"
+          else
+            echo "⚠️ 今日无数据变化或下载失败，跳过 Git 提交，防止 128 报错闪退。"
+          fi
