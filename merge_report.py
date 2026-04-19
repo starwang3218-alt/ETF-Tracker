@@ -1,69 +1,88 @@
+import pandas as pd
 import os
 import glob
-import shutil
-import pandas as pd
+import time
 
-def merge_pipelines():
+# --- 配置区 ---
+CLEANED_DIR = 'data/cleaned'      # step2 清洗后的文件存放处
+OUTPUT_REPORT = '最终合并持仓报告.csv'
+DAYS_TO_KEEP = 3                 # 原始数据保留天数
+DOWNLOADS_DIR = 'downloads'      # 需要清理的原始下载目录
+
+def merge_all_holdings():
+    """
+    将所有清洗后的单只 ETF 持仓文件合并成一个大宽表
+    """
     print("🔄 启动流水线合并模块 (merge_report.py)...")
     
-    # 1. 定义源文件夹 (第一阶段和第二阶段的产物)
-    dir_invesco = "data/cleaned_invesco"
-    dir_others = "data/cleaned_others" # 假设你第二步洗出来的数据在这里
+    # 扫描所有清洗后的 CSV
+    all_cleaned_files = glob.glob(os.path.join(CLEANED_DIR, '*.csv'))
     
-    # 2. 定义目标文件夹 (昨天的 step3 默认读取的文件夹，通常是 data/cleaned)
-    target_dir = "data/cleaned"
-    os.makedirs(target_dir, exist_ok=True)
-    
-    # 每次合并前，先清空目标池，防止旧数据污染
-    for old_file in glob.glob(os.path.join(target_dir, "*.csv")):
-        os.remove(old_file)
-        
-    # 收集两边的文件
-    files_invesco = glob.glob(os.path.join(dir_invesco, "*.csv")) if os.path.exists(dir_invesco) else []
-    files_others = glob.glob(os.path.join(dir_others, "*.csv")) if os.path.exists(dir_others) else []
-    
-    all_files = files_invesco + files_others
-    
-    if not all_files:
-        print("❌ 致命错误：没有找到任何清洗好的 CSV 文件！请检查 Step 1 和 Step 2 是否跑通。")
-        return
+    if not all_cleaned_files:
+        print("❌ 致命错误：没有找到任何清洗好的 CSV 文件！请检查 Step 2 是否跑通。")
+        return False
 
-    print(f"📊 发现 {len(files_invesco)} 个景顺文件，{len(files_others)} 个其他机构文件。")
-    print(f"🚚 正在将文件运输至统一处理池: {target_dir} ...")
+    print(f"🚀 正在聚合 {len(all_cleaned_files)} 个 ETF 的持仓底牌...")
     
-    dfs = []
-    success_count = 0
-    
-    for f in all_files:
+    combined_list = []
+    for f in all_cleaned_files:
         try:
-            # 【操作A：物理复制】把文件搬运到 step3 需要的文件夹
-            filename = os.path.basename(f)
-            shutil.copy(f, os.path.join(target_dir, filename))
-            
-            # 【操作B：读取数据】准备拼接总表
             df = pd.read_csv(f)
-            # 确保即使空文件也不报错
-            if not df.empty:
-                dfs.append(df)
-            success_count += 1
+            combined_list.append(df)
         except Exception as e:
-            print(f"    ⚠️ 读取或复制 {f} 时出错: {e}")
+            print(f"⚠️ 跳过破损文件 {f}: {e}")
 
-    # 3. 生成最终的查账大宽表
-    if dfs:
-        master_df = pd.concat(dfs, ignore_index=True)
-        # 顺手干掉完全为空的“幽灵行”
-        master_df.dropna(how='all', inplace=True)
-        
-        output_file = "全市场_ETF_基础持仓宽表.csv"
-        master_df.to_csv(output_file, index=False)
-        
-        print("-" * 40)
-        print(f"🎉 合并大功告成！")
-        print(f"✅ 成功聚合 {success_count} 个 ETF 标准文件至 '{target_dir}'。")
-        print(f"✅ 生成总查账表 '{output_file}'，共包含 {len(master_df)} 条底层持仓明细。")
-        print("➡️  数据已就绪，请立即执行: python step3_aggregate.py")
-        print("-" * 40)
+    # 合并数据
+    master_df = pd.concat(combined_list, ignore_index=True)
+    
+    # 按照市值排序，方便观察权重股
+    if 'Market_Value' in master_df.columns:
+        master_df = master_df.sort_values(by='Market_Value', ascending=False)
 
+    # 保存最终大表
+    master_df.to_csv(OUTPUT_REPORT, index=False, encoding='utf-8-sig')
+    print(f"✅ 全量合并完成！总行数: {len(master_df)}，已保存至: {OUTPUT_REPORT}")
+    return True
+
+def auto_cleanup(days=DAYS_TO_KEEP):
+    """
+    清理 3 天前的旧数据，确保 GitHub 仓库不会爆仓
+    """
+    print(f"🧹 启动自动清理程序：正在检查超过 {days} 天的旧文件...")
+    now = time.time()
+    cutoff = now - (days * 86400)
+    
+    count = 0
+    # 我们需要清理两个地方：原始下载区 和 中间清洗区
+    target_folders = [DOWNLOADS_DIR, CLEANED_DIR]
+    
+    for folder in target_folders:
+        if not os.path.exists(folder):
+            continue
+            
+        for root, dirs, files in os.walk(folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # 检查文件最后修改时间
+                if os.path.getmtime(file_path) < cutoff:
+                    try:
+                        os.remove(file_path)
+                        count += 1
+                    except Exception as e:
+                        print(f"⚠️ 无法删除 {file}: {e}")
+                        
+    if count > 0:
+        print(f"✨ 清理完毕：共移除了 {count} 个过期原始 CSV 文件。")
+    else:
+        print("📁 未发现过期文件，仓库保持现状。")
+
+# --- 执行入口 ---
 if __name__ == "__main__":
-    merge_pipelines()
+    # 1. 执行合并
+    success = merge_all_holdings()
+    
+    # 2. 只有合并成功后，才执行清理动作
+    if success:
+        auto_cleanup(DAYS_TO_KEEP)
+    else:
+        print("🚫 由于合并失败，已跳过自动清理，以便人工排查原始数据。")
