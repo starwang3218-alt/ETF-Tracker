@@ -50,7 +50,7 @@ def main():
     if missing_etfs:
         print(f"🚨 警报：原始清单中有 {len(target_names)} 个，但只清洗出 {len(cleaned_files)} 个！")
         print(f"🚨 发现 {len(missing_etfs)} 个顽固的漏网之鱼！正在生成通缉令...")
-        with open(REPORT_FILE, 'w', encoding='utf-8') as f:
+        with open(REPORT_FILE, 'w', encoding='utf-8-sig') as f:
             for etf in missing_etfs:
                 f.write(f"{etf}\n")
         print(f"📄 通缉令已生成: {REPORT_FILE}")
