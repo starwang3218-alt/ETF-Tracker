@@ -1,9 +1,12 @@
 name: 每日 ETF 持仓自动化流水线
 
 on:
-  # schedule:
-  #   - cron: '30 0 * * 2-6' 
-  workflow_dispatch: 
+  workflow_dispatch: # 保留手动按钮，想随时跑就随时点
+  schedule:
+    # 0 7 代表 UTC 7:00 (北京时间 15:00)
+    # * * 代表每个月、每一天
+    # 2-6 代表星期二到星期六
+    - cron: '0 7 * * 2-6'
 
 jobs:
   build-and-run:
@@ -47,7 +50,7 @@ jobs:
         run: python step5_abc_analysis.py
         continue-on-error: true
 
-      # - name: 7.3 生成量价合力终极榜单
+      # - name: 7.3 生成量价合力终极榜单 (暂不开启，后续配合价格数据再跑)
       #   run: python step6_price_volume.py
       #   continue-on-error: true
 
@@ -60,4 +63,4 @@ jobs:
             data/cleaned/
             reports/
             需要手动下载的ETF.txt
-          retention-days: 7
+          retention-days: 15
