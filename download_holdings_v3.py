@@ -3,12 +3,13 @@
 """
 批量下载 ETF / 基金产品页中的 Holdings 文件。
 
-本版新增特性 (v3.1 智能分流版)：
-1. 加入 `is_direct_file_link` 智能判断，对于 iShares, Global X 等直连 CSV 接口直接秒下，跳过网页解析。
-2. 保留 Invesco 的 Playwright 动态抓取逻辑，实现“秒下”与“慢速页面”的完美混合乱序交错下载。
+本版新增特性 (v3.2 终极破壁版)：
+1. 加入 `is_direct_file_link` 智能判断，跳过网页解析。
+2. 引入 `cloudscraper` 彻底绕过 Invesco 等企业级反爬防火墙。
+3. 新增“回马枪”重试机制：第一轮失败的任务会休眠后自动发起第二轮精准重试。
 
 使用方法：
-    pip install requests beautifulsoup4 lxml playwright
+    pip install requests beautifulsoup4 lxml playwright cloudscraper
     playwright install chromium
     python download_holdings_v3.py -i 全量乱序地址.txt -o downloads
 """
@@ -26,6 +27,7 @@ from typing import Iterable, Optional
 from urllib.parse import parse_qs, unquote, urlencode, urljoin, urlparse
 
 import requests
+import cloudscraper  # ✨ 新增：企业级反爬破壁机
 from bs4 import BeautifulSoup
 
 USER_AGENT = (
@@ -248,20 +250,18 @@ def looks_like_file_url(url: str) -> bool:
         return True
     return False
 
-# --- 新增：识别是否为直连文件 (秒下模式) ---
 def is_direct_file_link(url: str) -> bool:
     url_lower = url.lower()
     patterns = [
         r'\.csv(?:\?|$)', 
         r'\.xlsx?(?:\?|$)', 
         r'\.pdf(?:\?|$)',
-        r'filetype=csv',      # iShares ajax 接口特征
-        r'datatype=fund',     # iShares ajax 接口特征
-        r'full-holdings',     # Global X 接口特征
-        r'downloads/holdings' # <--- 新增：VanEck 直连接口特征
+        r'filetype=csv',      
+        r'datatype=fund',     
+        r'full-holdings',     
+        r'downloads/holdings' 
     ]
     return any(re.search(p, url_lower) for p in patterns)
-# ----------------------------------------
 
 def build_invesco_holdings_candidates(page_url: str, page_name: str, text_pool: str = "") -> list[Candidate]:
     if not is_invesco_etf_product_page(page_url):
@@ -353,12 +353,20 @@ def parse_jobs(input_file: Path) -> list[Job]:
     return jobs
 
 def build_session() -> requests.Session:
-    s = requests.Session()
+    # ✨ 核心修改：使用 cloudscraper 替代普通的 requests.Session
+    # 这让你的云端脚本直接变成一台真实的 Windows Chrome 浏览器
+    s = cloudscraper.create_scraper(
+        browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'mobile': False
+        }
+    )
     s.headers.update(
         {
             "User-Agent": USER_AGENT,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Language": "en-US,en;q=0.9",
         }
     )
     return s
@@ -593,7 +601,6 @@ async def dynamic_download(page_url: str, page_name: str, output_dir: Path, over
             except PlaywrightTimeoutError:
                 pass
             except Exception as e:
-                # 捕获直接触发下载导致的报错，防止脚本崩溃
                 if "Download is starting" in str(e):
                     print(f"    ⚠️ 警告: 页面尝试强制下载文件，已跳过渲染。")
                 pass
@@ -659,7 +666,7 @@ async def dynamic_download(page_url: str, page_name: str, output_dir: Path, over
             if not clicked:
                 continue
             try:
-                await page.wait_for_load_state("networkidle", timeout=5000)
+               await page.wait_for_load_state("networkidle", timeout=5000)
             except Exception:
                 pass
             await page.wait_for_timeout(1500)
@@ -771,37 +778,33 @@ async def main_async(args: argparse.Namespace) -> int:
     session = build_session()
     results: list[DownloadResult] = []
 
+    # ==========================================
+    # 第一轮主循环下载
+    # ==========================================
     for idx, job in enumerate(jobs, start=1):
         print(f"[{idx}/{len(jobs)}] 处理: {job.name} -> {job.url}")
         
-        # ====== 核心新增：物理级极速预判跳过 ======
         safe_job_name = safe_name(job.name)
-        # 寻找目录下是否已经存在同名文件（比如 IVV.csv, IVV.xlsx）
         existing_files = list(output_dir.glob(f"{safe_job_name}.*"))
         if existing_files and not args.overwrite:
             print(f"    ⏩ 本地已存在，极速跳过: {existing_files[0].name}")
             results.append(DownloadResult(ok=True, page_url=job.url, page_name=job.name, saved_path=str(existing_files[0]), via="pre-cache", note="秒跳过"))
             continue
-        # ==========================================
 
         result = None
 
-        # --- 核心新增：第一级智能分流 (直连秒下拦截) ---
         if is_direct_file_link(job.url):
             direct_cand = Candidate(url=job.url, source="direct-link", score=300)
             result = try_download_candidate(session, direct_cand, output_dir, job.name, args.overwrite)
             if result and result.ok:
                 result.via = "⚡ Direct-Fast (直连秒下)"
 
-        # --- 第二级：静态页面解析 ---
         if result is None or not result.ok:
             result = static_download(session, job.url, job.name, output_dir, args.overwrite)
 
-        # --- 第三级：动态浏览器渲染 (专对景顺等复杂页面) ---
         if (result is None or not result.ok) and not args.no_dynamic:
             result = await dynamic_download(job.url, job.name, output_dir, args.overwrite)
 
-        # 结果记录
         if result is None:
             result = DownloadResult(ok=False, page_url=job.url, page_name=job.name, via="none", note="未找到可下载的 Holdings 文件")
             print("    ❌ 未找到可下载的 Holdings 文件")
@@ -812,10 +815,51 @@ async def main_async(args: argparse.Namespace) -> int:
             print(f"    {status}: {result.saved_path or result.note}")
         results.append(result)
 
+    # ==========================================
+    # ✨ 核心新增：回马枪机制（失败任务重试）
+    # ==========================================
+    failed_indices = [i for i, r in enumerate(results) if not r.ok]
+    
+    if failed_indices:
+        print(f"\n🔄 第一轮结束，发现 {len(failed_indices)} 个下载失败的 ETF。")
+        print("⏳ 触发 [重试机制]：休眠 15 秒，让目标服务器防火墙降温...")
+        await asyncio.sleep(15) # 模拟人类操作停顿
+        
+        for i in failed_indices:
+            job = jobs[i]
+            print(f"\n    🔨 [第二轮重试] 正在处理: {job.name} -> {job.url}")
+            
+            result = None
+            if is_direct_file_link(job.url):
+                direct_cand = Candidate(url=job.url, source="direct-link-retry", score=300)
+                result = try_download_candidate(session, direct_cand, output_dir, job.name, args.overwrite)
+                if result and result.ok:
+                    result.via = "⚡ Direct-Fast (直连秒下-重试)"
+
+            if result is None or not result.ok:
+                result = static_download(session, job.url, job.name, output_dir, args.overwrite)
+
+            if (result is None or not result.ok) and not args.no_dynamic:
+                result = await dynamic_download(job.url, job.name, output_dir, args.overwrite)
+
+            if result is None:
+                result = DownloadResult(ok=False, page_url=job.url, page_name=job.name, via="none", note="重试依然未找到文件")
+                print("    ❌ 重试依然失败，需使用 manual_patch 机制手动补齐")
+            else:
+                if not result.page_url:
+                    result.page_url = job.url
+                status = "✅ 重试成功" if result.ok else "❌ 重试失败"
+                print(f"    {status}: {result.saved_path or result.note}")
+            
+            # 将新结果覆盖旧的失败记录
+            results[i] = result
+
+    # ==========================================
+
     log_path = output_dir / "download_log.csv"
     write_log(log_path, results)
     ok_count = sum(1 for r in results if r.ok)
-    print(f"\n✨ 完成：{ok_count}/{len(results)} 成功。日志已写入: {log_path}")
+    print(f"\n✨ 最终完成：{ok_count}/{len(results)} 成功。日志已写入: {log_path}")
     return 0 if ok_count == len(results) else 2
 
 def build_arg_parser() -> argparse.ArgumentParser:
