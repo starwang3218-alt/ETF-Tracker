@@ -37,9 +37,8 @@ def merge_all_holdings():
     master_df = pd.concat(df_list, ignore_index=True)
     
     # 【核心升级】：获取今天日期，生成形如 master_holdings_20260419.csv 的文件名
-    today_str = datetime.now().strftime("%Y%m%d")
-    output_file = os.path.join(OUTPUT_DIR, f'master_holdings_{today_str}.csv')
-    
+    # ✨ 修改后：使用固定名称 master_holdings.csv，确保下游脚本能精准找到它
+    output_file = os.path.join(OUTPUT_DIR, 'master_holdings.csv')
     master_df.to_csv(output_file, index=False, encoding='utf-8-sig')
     
     print(f"\n✨ 合并大功告成！")
