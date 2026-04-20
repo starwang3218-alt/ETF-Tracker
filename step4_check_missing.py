@@ -1,63 +1,89 @@
 import os
-import re
 import glob
+import re
 
-# --- 配置区 ---
+# --- 适应 GitHub 和本地的路径配置 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_FILE = os.path.join(BASE_DIR, '每日ETF下载地址.txt')
 CLEANED_DIR = os.path.join(BASE_DIR, 'data', 'cleaned')
-REPORT_FILE = os.path.join(BASE_DIR, '需要手动下载的ETF.txt')
+MISSING_FILE = os.path.join(BASE_DIR, '需要手动下载的ETF.txt')
 
-def safe_name(text):
-    """和 step1 保持完全一致的命名规则，确保能对上暗号"""
-    text = re.sub(r'[<>:"/|?*\x00-\x1f]+', '_', text)
-    text = re.sub(r"\s+", " ", text).strip().rstrip(".")
-    base = text[:120].strip() or "holdings"
-    reserved = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
-    if base.upper() in reserved:
-        base = f"{base}_ETF"
-    return base
+def get_clean_ticker(text):
+    """最强 Ticker 提取器：无视中文、无视 _cleaned、无视空格"""
+    if not text: return ""
+    
+    # 1. 如果描述以 "ETF" 结尾，先把它删了，因为它是干扰项
+    text = re.sub(r'\s+ETF$', '', str(text), flags=re.IGNORECASE)
+    text = text.replace('_cleaned', '').replace('_Cleaned', '')
+    
+    # 2. 尝试从字符串中提取连续的 3-5 位大写字母
+    tickers = re.findall(r'[A-Z]{3,5}', text)
+    if tickers:
+        res = tickers[-1]
+    else:
+        # 退而求其次，提取纯字母
+        res = re.sub(r'[^a-zA-Z]', '', str(text)).upper()
+        
+    # 3. 排除“影子目标”黑名单
+    blacklist = {'ETF', 'CLEANED', 'HOLDINGS', 'INDEX'}
+    if res in blacklist or len(res) < 2:
+        return ""
+        
+    # 4. 特殊处理：如果开头有小写 t（比如 t铜矿商），去掉它
+    if res.startswith('T') and len(res) > 3:
+        return res[1:]
+        
+    return res
 
 def main():
-    print("🔍 启动漏网之鱼排查器 (基于最原始 380 个 URL 清单)...")
+    print("🔍 启动智能漏网之鱼排查器...")
     
-    # 1. 解析源头目标清单
-    target_names = []
-    if not os.path.exists(URL_FILE):
-        print(f"❌ 找不到源文件: {URL_FILE}")
+    # 1. 扫描名单
+    target_map = {}
+    if os.path.exists(URL_FILE):
+        with open(URL_FILE, 'r', encoding='utf-8-sig') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#'): continue
+                parts = line.split()
+                raw_name = parts[-1] if len(parts) > 1 else line.split('/')[-1]
+                
+                key = get_clean_ticker(raw_name)
+                if key:
+                    target_map[key] = raw_name
+    else:
+        print(f"❌ 找不到名单文件: {URL_FILE}")
         return
 
-    with open(URL_FILE, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('#'): 
-                continue
-            m = re.match(r"^(https?://\S+)(?:\s+(.+))?$", line)
-            if m:
-                raw_name = m.group(2).strip() if m.group(2) else line.split("/")[-1]
-                target_names.append(safe_name(raw_name))
-                
-    # 2. 获取实际清洗成功的清单 (去后缀)
-    cleaned_files = [os.path.splitext(os.path.basename(f))[0] for f in glob.glob(os.path.join(CLEANED_DIR, '*.csv'))]
-    
-    # 3. 极其严苛的对比找茬
-    missing_etfs = []
-    for target in target_names:
-        if target not in cleaned_files:
-            missing_etfs.append(target)
+    # 2. 扫描库房
+    cleaned_keys = set()
+    if os.path.exists(CLEANED_DIR):
+        for f in glob.glob(os.path.join(CLEANED_DIR, '*.csv')):
+            filename = os.path.splitext(os.path.basename(f))[0]
+            cleaned_keys.add(get_clean_ticker(filename))
             
-    # 4. 生成终极通缉令报告
-    if missing_etfs:
-        print(f"🚨 警报：原始清单中有 {len(target_names)} 个，但只清洗出 {len(cleaned_files)} 个！")
-        print(f"🚨 发现 {len(missing_etfs)} 个顽固的漏网之鱼！正在生成通缉令...")
-        with open(REPORT_FILE, 'w', encoding='utf-8-sig') as f:
-            for etf in missing_etfs:
-                f.write(f"{etf}\n")
-        print(f"📄 通缉令已生成: {REPORT_FILE}")
+    # 3. 智能对账
+    missing = []
+    for k, original in target_map.items():
+        if k not in cleaned_keys:
+            missing.append(original)
+
+    # 4. 战报输出
+    print(f"📊 名单解析出的有效目标: {len(target_map)} 个")
+    print(f"📊 库房实际存货: {len(cleaned_keys)} 个")
+    print("-" * 40)
+
+    if missing:
+        print(f"🚨 抓到 {len(missing)} 个真正的漏网之鱼！正在生成通缉令...")
+        with open(MISSING_FILE, 'w', encoding='utf-8') as f:
+            for m in missing:
+                f.write(f"{m}\n")
+        print(f"📄 通缉令已生成: {MISSING_FILE}")
     else:
-        print("🎉 完美！所有原始链接都已成功下载并清洗，没有任何缺失！")
-        if os.path.exists(REPORT_FILE):
-            os.remove(REPORT_FILE)  # 清理旧的通缉令
+        print("✅ 完美对账！没有任何缺失！")
+        # 如果全齐了，把之前的通缉令删掉，免得打包报错
+        if os.path.exists(MISSING_FILE):
+            os.remove(MISSING_FILE)
 
 if __name__ == "__main__":
     main()
