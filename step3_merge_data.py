@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import glob
+from datetime import datetime
 
 # --- 配置区 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -35,8 +36,10 @@ def merge_all_holdings():
     print("⏳ 正在进行全量数据拼接...")
     master_df = pd.concat(df_list, ignore_index=True)
     
-    # 保存最终大表
-    output_file = os.path.join(OUTPUT_DIR, 'master_holdings.csv')
+    # 【核心升级】：获取今天日期，生成形如 master_holdings_20260419.csv 的文件名
+    today_str = datetime.now().strftime("%Y%m%d")
+    output_file = os.path.join(OUTPUT_DIR, f'master_holdings_{today_str}.csv')
+    
     master_df.to_csv(output_file, index=False, encoding='utf-8-sig')
     
     print(f"\n✨ 合并大功告成！")
