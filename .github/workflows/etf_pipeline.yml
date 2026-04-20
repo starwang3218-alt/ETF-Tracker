@@ -47,9 +47,9 @@ jobs:
         run: python step5_abc_analysis.py
         continue-on-error: true
 
-      - name: 7.3 生成量价合力终极榜单
-        run: python step6_price_volume.py
-        continue-on-error: true
+      # - name: 7.3 生成量价合力终极榜单
+      #   run: python step6_price_volume.py
+      #   continue-on-error: true
 
       - name: 8. 📤 上传终极数据包与研报供下载
         uses: actions/upload-artifact@v4
