@@ -3,10 +3,11 @@
 """
 批量下载 ETF / 基金产品页中的 Holdings 文件。
 
-本版新增特性 (v3.2 终极破壁版)：
+本版新增特性 (v3.3 终极净水版)：
 1. 加入 `is_direct_file_link` 智能判断，跳过网页解析。
 2. 引入 `cloudscraper` 彻底绕过 Invesco 等企业级反爬防火墙。
 3. 新增“回马枪”重试机制：第一轮失败的任务会休眠后自动发起第二轮精准重试。
+4. ✨ 物理级文件质检：强制拦截并销毁小于 200 字节的空文件/假文件，防止污染后续清洗流程。
 
 使用方法：
     pip install requests beautifulsoup4 lxml playwright cloudscraper
@@ -27,7 +28,7 @@ from typing import Iterable, Optional
 from urllib.parse import parse_qs, unquote, urlencode, urljoin, urlparse
 
 import requests
-import cloudscraper  # ✨ 新增：企业级反爬破壁机
+import cloudscraper  
 from bs4 import BeautifulSoup
 
 USER_AGENT = (
@@ -152,13 +153,12 @@ def safe_name(text: str, max_len: int = 120) -> str:
     text = re.sub(r"\s+", " ", text).strip().rstrip(".")
     base = text[:max_len].strip() or "holdings"
     
-    # Windows 系统的上古保留字黑名单
     reserved = {"CON", "PRN", "AUX", "NUL", 
                 "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", 
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
     
     if base.upper() in reserved:
-        base = f"{base}_ETF"  # 避开保留字
+        base = f"{base}_ETF"  
         
     return base
 
@@ -353,8 +353,6 @@ def parse_jobs(input_file: Path) -> list[Job]:
     return jobs
 
 def build_session() -> requests.Session:
-    # ✨ 核心修改：使用 cloudscraper 替代普通的 requests.Session
-    # 这让你的云端脚本直接变成一台真实的 Windows Chrome 浏览器
     s = cloudscraper.create_scraper(
         browser={
             'browser': 'chrome',
@@ -475,9 +473,14 @@ def try_download_candidate(session: requests.Session, candidate: Candidate, outp
     filename = filename_from_response(resp, base_name, preview_text=preview_text)
     target = output_dir / filename
     if target.exists() and not overwrite:
-        return DownloadResult(ok=True, page_url="", page_name=base_name, saved_path=str(target), file_url=final_url, via=f"{candidate.source}-cached", note="文件已存在，已跳过重新下载")
+        return DownloadResult(ok=True, page_url="", page_name=base_name, saved_path=str(target), file_url=final_url, via=f"{candidate.source}-cached", note="文件已存在，跳过")
 
-    target.write_bytes(resp.content)
+    # ✨ 核心防污染新增 1：文件秤重
+    file_data = resp.content
+    if len(file_data) < 200:
+        return DownloadResult(ok=False, page_url="", page_name=base_name, via=candidate.source, note="🚨 文件小于200字节(空/假文件)，已强行拦截")
+
+    target.write_bytes(file_data)
     return DownloadResult(ok=True, page_url="", page_name=base_name, saved_path=str(target), file_url=final_url, via=candidate.source, note=f"{ct} | {reason}")
 
 def static_download(session: requests.Session, page_url: str, page_name: str, output_dir: Path, overwrite: bool) -> Optional[DownloadResult]:
@@ -544,7 +547,14 @@ async def _save_playwright_download(download, output_dir: Path, page_name: str, 
     target = output_dir / f"{safe_name(page_name)}{ext}"
     if target.exists() and not overwrite:
         return str(target)
+    
     await download.save_as(str(target))
+    
+    # ✨ 核心防污染新增 2：动态下载文件秤重
+    if target.exists() and target.stat().st_size < 200:
+        target.unlink(missing_ok=True) # 物理销毁
+        return None
+        
     return str(target)
 
 async def _try_click_and_capture_download(page, label: str, output_dir: Path, page_name: str, overwrite: bool):
@@ -562,7 +572,12 @@ async def _try_click_and_capture_download(page, label: str, output_dir: Path, pa
                 return None
         download = await dl_info.value
         saved_path = await _save_playwright_download(download, output_dir, page_name, overwrite)
-        return DownloadResult(ok=True, page_url=page.url, page_name=page_name, saved_path=saved_path or "", file_url=download.url, via=f"playwright-download:{label}", note=download.suggested_filename or "")
+        
+        # ✨ 如果因为体积太小被销毁了，这里会拿到 None，判定失败
+        if not saved_path:
+            return None
+            
+        return DownloadResult(ok=True, page_url=page.url, page_name=page_name, saved_path=saved_path, file_url=download.url, via=f"playwright-download:{label}", note=download.suggested_filename or "")
     except PlaywrightTimeoutError:
         return None
     except Exception:
@@ -602,8 +617,7 @@ async def dynamic_download(page_url: str, page_name: str, output_dir: Path, over
                 pass
             except Exception as e:
                 if "Download is starting" in str(e):
-                    print(f"    ⚠️ 警告: 页面尝试强制下载文件，已跳过渲染。")
-                pass
+                    pass
             try:
                 await page.wait_for_load_state("networkidle", timeout=8000)
             except Exception:
@@ -748,9 +762,14 @@ async def dynamic_download(page_url: str, page_name: str, output_dir: Path, over
             target = output_dir / filename
             if target.exists() and not overwrite:
                 await browser.close()
-                return DownloadResult(ok=True, page_url=page_url, page_name=page_name, saved_path=str(target), file_url=final_url, via=f"{candidate.source}-cached", note="文件已存在，已跳过重新下载")
+                return DownloadResult(ok=True, page_url=page_url, page_name=page_name, saved_path=str(target), file_url=final_url, via=f"{candidate.source}-cached", note="文件已存在，跳过")
 
+            # ✨ 核心防污染新增 3：网络拦截最后的秤重
             body = await resp.body()
+            if len(body) < 200:
+                await browser.close()
+                return DownloadResult(ok=False, page_url=page_url, page_name=page_name, via=candidate.source, note="🚨 文件小于200字节(空/假文件)，已强行拦截")
+
             target.write_bytes(body)
             await browser.close()
             return DownloadResult(ok=True, page_url=page_url, page_name=page_name, saved_path=str(target), file_url=final_url, via=candidate.source, note=f"{ct} | {reason}")
@@ -778,18 +797,23 @@ async def main_async(args: argparse.Namespace) -> int:
     session = build_session()
     results: list[DownloadResult] = []
 
-    # ==========================================
     # 第一轮主循环下载
-    # ==========================================
     for idx, job in enumerate(jobs, start=1):
         print(f"[{idx}/{len(jobs)}] 处理: {job.name} -> {job.url}")
         
         safe_job_name = safe_name(job.name)
         existing_files = list(output_dir.glob(f"{safe_job_name}.*"))
-        if existing_files and not args.overwrite:
-            print(f"    ⏩ 本地已存在，极速跳过: {existing_files[0].name}")
-            results.append(DownloadResult(ok=True, page_url=job.url, page_name=job.name, saved_path=str(existing_files[0]), via="pre-cache", note="秒跳过"))
-            continue
+        
+        # 补充：如果有缓存文件，但体积太小，自动删除它，不再“极速跳过”
+        if existing_files:
+            if existing_files[0].stat().st_size < 200:
+                print(f"    🗑️ 发现本地存在小于200字节的脏缓存: {existing_files[0].name}，自动清理并重新下载")
+                existing_files[0].unlink()
+                existing_files = [] # 清空列表，强制重下
+            elif not args.overwrite:
+                print(f"    ⏩ 本地已存在合法文件，极速跳过: {existing_files[0].name}")
+                results.append(DownloadResult(ok=True, page_url=job.url, page_name=job.name, saved_path=str(existing_files[0]), via="pre-cache", note="秒跳过"))
+                continue
 
         result = None
 
@@ -815,15 +839,13 @@ async def main_async(args: argparse.Namespace) -> int:
             print(f"    {status}: {result.saved_path or result.note}")
         results.append(result)
 
-    # ==========================================
-    # ✨ 核心新增：回马枪机制（失败任务重试）
-    # ==========================================
+    # 回马枪重试机制
     failed_indices = [i for i, r in enumerate(results) if not r.ok]
     
     if failed_indices:
-        print(f"\n🔄 第一轮结束，发现 {len(failed_indices)} 个下载失败的 ETF。")
+        print(f"\n🔄 第一轮结束，发现 {len(failed_indices)} 个下载失败(或被判定为假文件)的 ETF。")
         print("⏳ 触发 [重试机制]：休眠 15 秒，让目标服务器防火墙降温...")
-        await asyncio.sleep(15) # 模拟人类操作停顿
+        await asyncio.sleep(15)
         
         for i in failed_indices:
             job = jobs[i]
@@ -851,10 +873,7 @@ async def main_async(args: argparse.Namespace) -> int:
                 status = "✅ 重试成功" if result.ok else "❌ 重试失败"
                 print(f"    {status}: {result.saved_path or result.note}")
             
-            # 将新结果覆盖旧的失败记录
             results[i] = result
-
-    # ==========================================
 
     log_path = output_dir / "download_log.csv"
     write_log(log_path, results)
@@ -863,7 +882,7 @@ async def main_async(args: argparse.Namespace) -> int:
     return 0 if ok_count == len(results) else 2
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="批量下载基金/ETF 页面中的 Holdings 文件 (含直连加速)")
+    parser = argparse.ArgumentParser(description="批量下载基金/ETF 页面中的 Holdings 文件 (含防污染+重试)")
     parser.add_argument("-i", "--input", required=True, help="输入 txt 文件路径，每行格式：URL [可选名称]")
     parser.add_argument("-o", "--output", default="downloads", help="下载目录，默认 downloads")
     parser.add_argument("--overwrite", action="store_true", help="如果文件已存在则覆盖")
