@@ -2,61 +2,56 @@ name: 每日 ETF 持仓自动化流水线
 
 on:
   # schedule:
-  #   # 第一次：北京时间 08:30 (UTC 00:30)
   #   - cron: '30 0 * * 2-6' 
-  #   # 第二次：北京时间 15:00 (UTC 07:00)
-  #   - cron: '0 7 * * 2-6'
-  workflow_dispatch:  # 保留这个，这样你以后想手动跑的时候还能手动点
+  workflow_dispatch: 
 
 jobs:
-  run-pipeline:
+  build-and-run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1. 检出代码库
+      - name: 1. 拉取最新代码
         uses: actions/checkout@v4
 
-      - name: 2. 设置 Python 3.10 环境
-        uses: actions/setup-python@v5
+      - name: 2. 设置 Python 环境
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
-      - name: 3. 安装依赖和浏览器内核
+      - name: 3. 安装所有依赖
         run: |
-          pip install requests beautifulsoup4 lxml playwright pandas openpyxl
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 lxml playwright pandas openpyxl numpy
           playwright install chromium
 
-      - name: 4. 全量下载 (景顺+其他机构交错运行)
+      - name: 4. 全量下载 ETF 原始数据
         run: |
           python download_holdings_v3.py -i 每日ETF下载地址.txt -o downloads/ --overwrite
         continue-on-error: true
 
-      - name: 5. 第二阶段：处理其他机构 (下载 + 清洗)
+      - name: 5. 究极清洗 (自动避让、找表头、洗净)
         run: |
-          python step1_download.py
-          python step2_clean.py
+          python step2_clean_unified.py
         continue-on-error: true
 
-      - name: 6. 第三阶段：全局合并与量化分析 (聚合 + 算增量)
+      - name: 6. 万剑归宗 (合并出 Master 终极表)
         run: |
-          python merge_report.py
-          python step3_aggregate.py
-          python step4_calculate_delta.py
+          python step3_merge_data.py
+        continue-on-error: true
 
-      - name: 7. 终极防爆破：智能提交与推送
+      - name: 7. 漏网之鱼排查与 ABC 核心分析
         run: |
-          # 1. 设置机器人身份
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          
-          # 2. 把所有变化（包括新生成的报告、以及被清理脚本删掉的旧数据）全部抓取
-          git add .
-          
-          # 3. 智能判断：如果真有变化才提交，没变化就平稳跳过
-          if ! git diff --cached --quiet; then
-            git commit -m "📊 机构持仓自动更新: $(date +'%Y-%m-%d %H:%M')"
-            git push
-            echo "✅ 数据已成功推送到仓库！"
-          else
-            echo "⚠️ 今日无数据变化或下载失败，跳过 Git 提交，防止 128 报错闪退。"
-          fi
+          python step4_check_missing.py
+          python step5_abc_analysis.py
+        continue-on-error: true
+
+      - name: 8. 📤 上传终极数据包与研报供下载
+        uses: actions/upload-artifact@v4
+        with:
+          name: ETF-Master-Data-And-Reports
+          path: |
+            data/merged/master_holdings.csv
+            data/cleaned/
+            reports/
+            需要手动下载的ETF.txt
+          retention-days: 7
