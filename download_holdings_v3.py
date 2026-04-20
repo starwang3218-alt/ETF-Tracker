@@ -12,7 +12,7 @@
 使用方法：
     pip install requests beautifulsoup4 lxml playwright
     playwright install chromium
-    python download_holdings_v3.py -i 全量乱序地址.txt -o downloads
+    python download_holdings_v3.py -i 每日ETF下载地址.txt -o downloads
 """
 
 from __future__ import annotations
