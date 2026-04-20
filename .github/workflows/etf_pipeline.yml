@@ -39,11 +39,16 @@ jobs:
           python step3_merge_data.py
         continue-on-error: true
 
-      - name: 7. 漏网排查与核心分析计算
-        run: |
-          python step4_check_missing.py
-          python step5_abc_analysis.py
-          python step6_price_volume.py
+      - name: 7.1 漏网之鱼排查与生成通缉令
+        run: python step4_check_missing.py
+        continue-on-error: true
+
+      - name: 7.2 生成 ABC 核心资产报告
+        run: python step5_abc_analysis.py
+        continue-on-error: true
+
+      - name: 7.3 生成量价合力终极榜单
+        run: python step6_price_volume.py
         continue-on-error: true
 
       - name: 8. 📤 上传终极数据包与研报供下载
