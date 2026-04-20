@@ -62,7 +62,7 @@ https://www.ishares.com/us/products/256101/ishares-msci-usa-quality-factor-etf/1
 https://www.invesco.com/us/en/financial-products/etfs/invesco-international-developed-dynamic-multifactor-etf.html	IMFL
 https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xlc.xlsx     通信服务XLC
 https://www.ishares.com/us/products/239728/ishares-sp-500-value-etf/1467271812596.ajax?fileType=csv&fileName=IVE_holdings&dataType=fund	IVE
-https://assets.globalxetfs.com/funds/holdings/copx_full-holdings_20260417.csv        t铜矿商COPX
+https://assets.globalxetfs.com/funds/holdings/copx_full-holdings_20260417.csv        铜矿商COPX
 https://www.invesco.com/us/en/financial-products/etfs/invesco-global-equity-net-zero-etf.html	IQSZ
 https://www.vaneck.com/us/en/investments/copper-green-metals-etf-emet/downloads/holdings/       emet铜和绿色金属
 https://www.ishares.com/us/products/239707/ishares-russell-1000-etf/1467271812596.ajax?fileType=csv&fileName=IWB_holdings&dataType=fund	IWB
@@ -148,7 +148,7 @@ https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/
 https://www.ishares.com/us/products/251616/ishares-msci-usa-value-factor-etf/1467271812596.ajax?fileType=csv&fileName=VLUE_holdings&dataType=fund	VLUE
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-smallcap-consumer-staples-etf.html	PSCC
 https://www.vaneck.com/us/en/investments/robotics-etf-ibot/downloads/holdings/                                                ibot机器人  
-https://assets.globalxetfs.com/funds/holdings/socl_full-holdings_20260417.csv 		SOCL社交媒体 ETF
+https://assets.globalxetfs.com/funds/holdings/socl_full-holdings_20260417.csv 		SOCL社交媒体
 https://www.ishares.com/us/products/239762/ishares-sp-midcap-400-growth-etf/1467271812596.ajax?fileType=csv&fileName=IJK_holdings&dataType=fund	IJK
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-smallcap-consumer-discretionary-etf.html	PSCD
 https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xntk.xlsx         XNTK科技
@@ -171,7 +171,7 @@ https://www.ishares.com/us/products/239775/ishares-sp-smallcap-600-value-etf/146
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-smallcap-materials-etf.html	PSCM
 https://www.vaneck.com/us/en/investments/video-gaming-esports-etf-espo/downloads/holdings/                         espo视频游戏和电子竞技
 https://assets.globalxetfs.com/funds/holdings/lngx_full-holdings_20260417.csv 		LNGX美国天然气
-https://www.ishares.com/us/products/239773/ishares-sp-smallcap-600-growth-etf/1467271812596.ajax?fileType=csv&fileName=IJT_holdings&dataType=fund	IJT
+https://www.ishares.com/us/products/239773/ishares-sp-smallcap-600-growth-etf/1467271812596.ajax?fileType=csv&fileName=IJT_holdings&dataType=fund	       IJT
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-smallcap-information-technology-etf.html	PSCT
 https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/etfs/us/holdings-daily-us-en-mdyv.xlsx             MDYV中型市值价值
 https://www.ishares.com/us/products/239667/ishares-msci-kld-400-social-etf/1467271812596.ajax?fileType=csv&fileName=DSI_holdings&dataType=fund	DSI
@@ -188,9 +188,7 @@ https://www.ishares.com/us/products/336267/ishares-s-p-500-buywrite-etf/14672718
 https://www.invesco.com/us/en/financial-products/etfs/invesco-dorsey-wright-healthcare-momentum-etf.html	PTH
 https://www.ishares.com/us/products/339775/ishares-nasdaq-top-30-stocks-etf/1467271812596.ajax?fileType=csv&fileName=QTOP_holdings&dataType=fund	QTOP
 https://www.invesco.com/us/en/financial-products/etfs/invesco-dorsey-wright-utilities-momentum-etf.html	PUI
-https://www.ishares.com/us/products/251465/ishares-msci-usa-size-factor-etf/1467271812596.ajax?fileType=csv&fileName=SIZE_holdings&dataType=fund	SIZE
 https://www.invesco.com/us/en/financial-products/etfs/invesco-dorsey-wright-energy-momentum-etf.html	PXI
-https://www.ishares.com/us/products/239515/ishares-us-insurance-etf/1467271812596.ajax?fileType=csv&fileName=IAK_holdings&dataType=fund	IAK
 https://www.invesco.com/us/en/financial-products/etfs/invesco-dorsey-wright-basic-materials-momentum-etf.html	PYZ
 https://www.ishares.com/us/products/333889/ishares-large-cap-core-active-etf/1467271812596.ajax?fileType=csv&fileName=BLCR_holdings&dataType=fund	BLCR
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-equal-weight-communication-services-etf.html	RSPC
@@ -214,7 +212,6 @@ https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-equal-weight-technology-etf.html	RSPT
 https://www.ishares.com/us/products/336267/ishares-s-p-500-buywrite-etf/1467271812596.ajax?fileType=csv&fileName=IVVW_holdings&dataType=fund	IVVW
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-equal-weight-utilities-etf.html	RSPU
-https://www.ishares.com/us/products/339775/ishares-nasdaq-top-30-stocks-etf/1467271812596.ajax?fileType=csv&fileName=QTOP_holdings&dataType=fund	QTOP
 https://www.invesco.com/us/en/financial-products/etfs/invesco-msci-sustainable-future-etf.html	ERTH
 https://www.ishares.com/us/products/345785/ishares-large-cap-10-target-buffer-dec-etf/1467271812596.ajax?fileType=csv&fileName=TEND_holdings&dataType=fund	TEND
 https://www.invesco.com/us/en/financial-products/etfs/invesco-bloomberg-financial-data-providers-etf.html	FDIQ
@@ -252,7 +249,6 @@ https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/
 https://www.invesco.com/us/en/financial-products/etfs/invesco-pharmaceuticals-etf.html	PJP
 https://www.ishares.com/us/products/239580/ishares-morningstar-largecap-growth-etf/1467271812596.ajax?fileType=csv&fileName=ILCG_holdings&dataType=fund	ILCG
 https://www.invesco.com/us/en/financial-products/etfs/invesco-building-construction-etf.html	PKB
-https://assets.globalxetfs.com/funds/holdings/bits_full-holdings_20260417.csv 		BITS区块链与比特币策略
 https://www.invesco.com/us/en/financial-products/etfs/invesco-nasdaq-internet-etf.html	PNQI
 https://www.ishares.com/us/products/239513/ishares-dow-jones-us-etf/1467271812596.ajax?fileType=csv&fileName=IYY_holdings&dataType=fund	IYY
 https://www.invesco.com/us/en/financial-products/etfs/invesco-aerospace-defense-etf.html	PPA
@@ -288,7 +284,7 @@ https://assets.globalxetfs.com/funds/holdings/flow_full-holdings_20260417.csv 		
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-100-equal-weight-etf.html	EQWL
 https://www.ishares.com/us/products/239721/ishares-russell-top-200-etf/1467271812596.ajax?fileType=csv&fileName=IWL_holdings&dataType=fund	IWL
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-midcap-400-garp-etf.html	GRPM
-https://assets.globalxetfs.com/funds/holdings/heal_full-holdings_20260417.csv 		HEAL健康科技 ETF
+https://assets.globalxetfs.com/funds/holdings/heal_full-holdings_20260417.csv 		HEAL健康科技
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-smallcap-600-garp-etf.html	GRPZ
 https://www.invesco.com/us/en/financial-products/etfs/invesco-rafi-strategic-us-etf.html	IUS
 https://assets.globalxetfs.com/funds/holdings/aqwa_full-holdings_20260417.csv 		AQWA清洁水
@@ -322,7 +318,6 @@ https://www.ishares.com/us/products/239510/ishares-us-healthcare-providers-etf/1
 https://www.invesco.com/us/en/financial-products/etfs/invesco-nasdaq-free-cash-flow-achievers-etf.html	QOWZ
 https://www.ishares.com/us/products/239501/ishares-transportation-average-etf/1467271812596.ajax?fileType=csv&fileName=IYT_holdings&dataType=fund	IYT
 https://www.invesco.com/us/en/financial-products/etfs/invesco-qqq-income-advantage-etf.html	QQA
-https://assets.globalxetfs.com/funds/holdings/bccc_full-holdings_20260417.csv 		BCCC比特币备兑看涨期权
 https://www.invesco.com/us/en/financial-products/etfs/invesco-qqq-low-volatility-etf.html	QQLV
 https://www.ishares.com/us/products/239524/ishares-us-utilities-etf/1467271812596.ajax?fileType=csv&fileName=IDU_holdings&dataType=fund	IDU
 https://www.invesco.com/us/en/financial-products/etfs/invesco-esg-nasdaq-100-etf.html	QQMG
@@ -346,7 +341,7 @@ https://www.ishares.com/us/products/239503/ishares-us-basic-materials-etf/146727
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-ultra-dividend-revenue-etf.html	RDIV
 https://assets.globalxetfs.com/funds/holdings/orbx_full-holdings_20260417.csv 		ORBX 太空科技
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-midcap-400-pure-growth-etf.html	RFG
-https://www.ishares.com/us/products/348532/ishares-staked-ethereum-trust-etf/1467271812596.ajax?fileType=csv&fileName=ETHB_holdings&dataType=fund	ETHB
+https://www.ishares.com/us/products/348532/ishares-staked-ethereum-trust-etf/1467271812596.ajax?fileType=csv&fileName=ETHB_holdings&dataType=fund	     ETHB
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-midcap-400-pure-value-etf.html	RFV
 https://www.ishares.com/us/products/339779/ishares-top-20-us-stocks-etf/1467271812596.ajax?fileType=csv&fileName=TOPT_holdings&dataType=fund	TOPT
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-pure-growth-etf.html	RPG
@@ -360,10 +355,8 @@ https://assets.globalxetfs.com/funds/holdings/egle_full-holdings_20260417.csv 		
 https://www.invesco.com/us/en/financial-products/etfs/invesco-esg-sp-500-equal-weight-etf.html	RSPE
 https://www.ishares.com/us/products/239582/ishares-morningstar-midcap-etf/1467271812596.ajax?fileType=csv&fileName=IMCB_holdings&dataType=fund	IMCB
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-smallcap-600-revenue-etf.html	RWJ
-https://assets.globalxetfs.com/funds/holdings/btrn_full-holdings_20260417.csv 		BTRN比特币趋势策略
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-midcap-400-revenue-etf.html	RWK
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-revenue-etf.html	RWL
-https://www.ishares.com/us/products/312046/ishares-u-s-tech-breakthrough-multisector-etf/1467271812596.ajax?fileType=csv&fileName=TECB_holdings&dataType=fund	TECB
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-smallcap-600-pure-growth-etf.html	RZG
 https://www.ishares.com/us/products/251465/ishares-msci-usa-size-factor-etf/1467271812596.ajax?fileType=csv&fileName=SIZE_holdings&dataType=fund	SIZE
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-smallcap-600-pure-value-etf.html	RZV
@@ -382,7 +375,7 @@ https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-momentum-et
 https://www.ishares.com/us/products/308574/ishares-esg-msci-usa-leaders-etf/1467271812596.ajax?fileType=csv&fileName=SUSL_holdings&dataType=fund	SUSL
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-value-with-momentum-etf.html	SPVM
 https://www.ishares.com/us/products/239584/ishares-morningstar-midcap-value-etf/1467271812596.ajax?fileType=csv&fileName=IMCV_holdings&dataType=fund	IMCV
-https://www.invesco.com/us/en/financial-products/etfs/invesco-bloomberg-analyst-rating-improvers-etf.html	UPGD
+https://www.invesco.com/us/en/financial-products/etfs/invesco-bloomberg-analyst-rating-improvers-etf.html	         UPGD
 https://assets.globalxetfs.com/funds/holdings/flag_full-holdings_20260417.csv 		FLAG标普 500美国市场领导者前 50 强
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-top-50-etf.html	XLG
 https://www.ishares.com/us/products/315917/ishares-esg-screened-s-p-500-etf/1467271812596.ajax?fileType=csv&fileName=XVV_holdings&dataType=fund	XVV
