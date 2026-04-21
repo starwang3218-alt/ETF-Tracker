@@ -3,6 +3,7 @@ import os
 import glob
 import re
 import warnings
+from datetime import datetime, timedelta
 
 # 屏蔽 openpyxl 烦人的 Excel 样式警告
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
@@ -11,6 +12,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_DIR = os.path.join(BASE_DIR, 'downloads')
 OUTPUT_DIR = os.path.join(BASE_DIR, 'data', 'cleaned')
+REPORT_FILE = os.path.join(BASE_DIR, 'data', 'data_freshness_report.csv') 
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -26,6 +28,7 @@ COLUMN_MAPPING = {
     'Holding Name': 'Holding_Name',
     'Security Name': 'Holding_Name',
     'Company Name': 'Holding_Name',
+    'Company': 'Holding_Name',         # 👈 新增：认领 Company 列
     
     'Weight (%)': 'Weight_Percent',
     'Weight': 'Weight_Percent',
@@ -37,6 +40,8 @@ COLUMN_MAPPING = {
     'Shares Held': 'Shares',
     'Quantity': 'Shares',
     'Shares/Par Value': 'Shares',
+    'Share/ Par': 'Shares',            # 👈 新增：认领 Share/ Par 列
+    'Share/Par': 'Shares',             # 👈 新增：防御性添加，防止有些表没有空格
     'Nominal': 'Shares',
     'Amount': 'Shares',
     
@@ -54,9 +59,7 @@ def extract_etf_ticker(filename):
     return base.split('.')[0]
 
 def get_header_score(text):
-    """【核心科技】给表头打分：严格匹配独立单词，防止 ishares 被当作 shares"""
     text = str(text).lower()
-    # 使用 \b 规定必须是独立的单词 (word boundary)
     keywords = [
         r'\bticker\b', r'\bsymbol\b', r'\bidentifier\b',
         r'\bweight\b', r'\bshares\b', r'\bquantity\b',
@@ -70,33 +73,26 @@ def get_header_score(text):
     return score
 
 def find_header_and_load(file_path):
-    """【核心科技】全文件扫描评分，找出真正的表头之王"""
     ext = file_path.lower().split('.')[-1]
-    
     try:
-        # CSV / BIN 逻辑
         if ext in ['csv', 'bin']:
             best_score = 0
             best_idx = 0
-            
             with open(file_path, 'r', encoding='utf-8-sig', errors='ignore') as f:
                 for i, line in enumerate(f):
-                    if i > 50: break # 只扫前50行
+                    if i > 300: break 
                     score = get_header_score(line)
-                    # 谁的分数最高，谁就是真表头
                     if score > best_score:
                         best_score = score
                         best_idx = i
             
-            # sep=None 自动识别 Tab 还是逗号分隔
             if best_score >= 2:
                 return pd.read_csv(file_path, skiprows=best_idx, encoding='utf-8-sig', sep=None, engine='python', on_bad_lines='skip')
             else:
                 return pd.read_csv(file_path, encoding='utf-8-sig', sep=None, engine='python', on_bad_lines='skip')
 
-        # Excel 逻辑
         elif ext in ['xlsx', 'xls']:
-            df_test = pd.read_excel(file_path, nrows=50, header=None) 
+            df_test = pd.read_excel(file_path, nrows=300, header=None) 
             best_score = 0
             best_idx = 0
             for i in range(len(df_test)):
@@ -105,56 +101,120 @@ def find_header_and_load(file_path):
                 if score > best_score:
                     best_score = score
                     best_idx = i
-                        
+                
             if best_score >= 2:
                 return pd.read_excel(file_path, header=best_idx) 
             return pd.read_excel(file_path)
 
-    except pd.errors.EmptyDataError:
-        print(f"    ⏩ 跳过空文件: {os.path.basename(file_path)}")
-        return pd.DataFrame()
     except Exception as e:
-        print(f"    ⚠️ 读取异常 {os.path.basename(file_path)}: {e}")
         return pd.DataFrame()
+
+def get_expected_date():
+    today = datetime.now()
+    if today.weekday() == 0: 
+        return (today - timedelta(days=3)).date()
+    elif today.weekday() == 6:
+        return (today - timedelta(days=2)).date()
+    else:
+        return (today - timedelta(days=1)).date()
+
+def extract_as_of_date(file_path):
+    ext = file_path.lower().split('.')[-1]
+    date_pattern = re.compile(r'(\d{1,2}-[A-Za-z]{3}-\d{2,4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{2,4}|\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{2,4})')
+    
+    def parse_date(d_str):
+        try:
+            return pd.to_datetime(d_str).date()
+        except:
+            return None
+            
+    def check_text_for_date(text):
+        text_str = str(text)
+        text_lower = text_str.lower()
         
-    return pd.DataFrame()
+        if 'maturity' in text_lower:
+            return None
+            
+        if any(kw in text_lower for kw in ['as of', 'asof', 'date', 'holdings']):
+            matches = date_pattern.findall(text_str)
+            if matches:
+                return parse_date(matches[0])
+        return None
+
+    try:
+        if ext in ['csv', 'bin']:
+            with open(file_path, 'r', encoding='utf-8-sig', errors='ignore') as f:
+                for line in f:
+                    parsed = check_text_for_date(line)
+                    if parsed: return parsed
+                            
+        elif ext in ['xlsx', 'xls']:
+            df_test = pd.read_excel(file_path, nrows=200, header=None)
+            for _, row in df_test.iterrows():
+                row_str = " ".join([str(val) for val in row.values if pd.notna(val)])
+                parsed = check_text_for_date(row_str)
+                if parsed: return parsed
+    except Exception:
+        pass
+    return None
 
 def clean_data():
-    print(f"🔄 启动全能数据清洗模块...\n📂 扫描目录: {INPUT_DIR}")
+    print(f"🔄 启动数据清洗引擎...\n📂 扫描目录: {INPUT_DIR}")
     
     search_path = os.path.join(INPUT_DIR, '**', '*.*')
     all_files = glob.glob(search_path, recursive=True)
     target_files = [f for f in all_files if f.lower().endswith(('.csv', '.xlsx', '.xls', '.bin'))]
     
     if not target_files:
-        print(f"❌ 错误：在 {INPUT_DIR} 没有找到任何数据文件！")
+        print(f"❌ 错误：未找到数据文件！")
         return
 
-    print(f"🚀 发现 {len(target_files)} 个原始文件，开始深度清洗...")
     success_count = 0
+    expected_date = get_expected_date()
+    freshness_log = [] 
     
     for f in target_files:
-        if 'download_log' in f.lower():
-            continue
+        if 'download_log' in f.lower(): continue
             
         etf_ticker = extract_etf_ticker(f)
-        df = find_header_and_load(f)
+        file_date = extract_as_of_date(f)
         
+        status_flag = "未知"
+        date_str = "未找到内置日期"
+        print_status = ""
+
+        if file_date:
+            date_str = str(file_date)
+            if file_date == expected_date:
+                status_flag = "🟢 最新"
+                print_status = f"[🟢 最新: {file_date}]"
+            elif file_date < expected_date:
+                status_flag = "🔴 滞后"
+                print_status = f"[🔴 滞后: {file_date} (预期 {expected_date})]"
+            else:
+                status_flag = "🟡 异动"
+                print_status = f"[🟡 异动: {file_date}]"
+        else:
+            status_flag = "⚪ 未知"
+            print_status = "[⚪ 未找到 As Of 日期]"
+
+        df = find_header_and_load(f)
         if df.empty:
+            freshness_log.append({'ETF_Ticker': etf_ticker, 'File_Date': date_str, 'Status': '❌ 读取失败', 'Row_Count': 0})
             continue
             
         df.columns = [str(col).strip().replace('\n', '').replace('\r', '') for col in df.columns]
         df.rename(columns=COLUMN_MAPPING, inplace=True)
-        
-        # 暴力去重：消灭多个 Shares 同名列导致的 'str' 报错
         df = df.loc[:, ~df.columns.duplicated()]
         
         if 'Holding_Ticker' not in df.columns:
-            print(f"    ⚠️ {etf_ticker} 缺少持仓代码列，目前提取到的列名有: {list(df.columns)}")
+            freshness_log.append({'ETF_Ticker': etf_ticker, 'File_Date': date_str, 'Status': '❌ 缺持仓列', 'Row_Count': 0})
             continue
             
         df = df.dropna(subset=['Holding_Ticker'])
-        df = df[~df['Holding_Ticker'].astype(str).str.contains('Total|Cash|--|NaN', case=False, na=False)]
+        
+        # --- 🌟 新增过滤逻辑 1：不仅过滤 Total，还要把含 As of 和 Date 的伪代码也毙掉 ---
+        df = df[~df['Holding_Ticker'].astype(str).str.contains('Total|Cash|--|NaN|As of|AsOf|Date|#', case=False, na=False)]
         
         for num_col in ['Shares', 'Market_Value', 'Weight_Percent']:
             if num_col in df.columns:
@@ -162,6 +222,10 @@ def clean_data():
                 df[num_col] = df[num_col].str.replace('$', '', regex=False)
                 df[num_col] = df[num_col].str.replace('%', '', regex=False)
                 df[num_col] = pd.to_numeric(df[num_col], errors='coerce').fillna(0)
+                
+        # --- 🌟 新增过滤逻辑 2：剔除由于格式化等原因导致 Shares 为 0 的废弃行 ---
+        if 'Shares' in df.columns:
+            df = df[df['Shares'] > 0]
                 
         df['ETF_Ticker'] = etf_ticker
         
@@ -171,14 +235,25 @@ def clean_data():
                 final_cols.append(col)
                 
         df_clean = df[final_cols]
-        
         output_file = os.path.join(OUTPUT_DIR, f"{etf_ticker}_cleaned.csv")
         df_clean.to_csv(output_file, index=False, encoding='utf-8-sig')
         
-        print(f"    ✅ 洗净: {etf_ticker} (包含 {len(df_clean)} 条持仓)")
+        print(f"    ✅ 洗净: {etf_ticker} {print_status} (包含 {len(df_clean)} 条)")
         success_count += 1
+        
+        freshness_log.append({
+            'ETF_Ticker': etf_ticker,
+            'File_Date': date_str,
+            'Expected_Date': str(expected_date),
+            'Status': status_flag,
+            'Row_Count': len(df_clean)
+        })
 
-    print(f"\n✨ 清洗完毕！成功处理 {success_count} 个文件，全部存入 {OUTPUT_DIR}")
+    if freshness_log:
+        df_report = pd.DataFrame(freshness_log)
+        df_report.sort_values(by=['Status', 'ETF_Ticker'], inplace=True)
+        df_report.to_csv(REPORT_FILE, index=False, encoding='utf-8-sig')
+        print(f"\n📊 质检报告已生成: {REPORT_FILE}")
 
 if __name__ == "__main__":
     clean_data()
