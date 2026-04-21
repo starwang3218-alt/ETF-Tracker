@@ -1,10 +1,18 @@
 import pandas as pd
 import os
 
-# --- 核心路径修复 ---
+# 1. 基础路径定义
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# 锁定你刚刚在 Step 3 中生成的“看板表”
-MASTER_FILE = os.path.join(BASE_DIR, 'data', 'master_holdings_analyzed.csv')
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+# --- 重点修复：定义报告存放目录 ---
+REPORT_DIR = os.path.join(BASE_DIR, 'reports') 
+
+# 2. 确保文件夹存在（不存在就建一个，防止报错）
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(REPORT_DIR, exist_ok=True)
+
+# 3. 输入文件路径
+MASTER_FILE = os.path.join(DATA_DIR, 'master_holdings_analyzed.csv')
 
 def run_abc_analysis():
     print(f"🚀 正在从 {MASTER_FILE} 读取数据进行权重排名...")
@@ -13,15 +21,18 @@ def run_abc_analysis():
         print(f"❌ 找不到底表: {MASTER_FILE}")
         return
 
-    # 注意：你说过这里用 utf-8-sig 以防乱码
+    # 读取并进行分析
     df = pd.read_csv(MASTER_FILE, encoding='utf-8-sig')
     
-    # ... 后面的分析逻辑保持不变 ...
+    # ... (这里是你中间的计算逻辑) ...
     
-    # 记得输出时也保持在 data 目录下
-    output_path = os.path.join(BASE_DIR, 'data', 'abc_analysis_results.csv')
-    df.to_csv(output_path, index=False, encoding='utf-8-sig')
-    print(f"✨ ABC 分析完成，结果已存入: {output_path}")
+    print("⏳ 正在计算全市场重仓股...")
+    # 假设你的计算结果叫 top_holdings
+    # 这里的保存逻辑就不会报错了，因为 REPORT_DIR 已经定义好了
+    output_top50 = os.path.join(REPORT_DIR, 'Report_A_全市场重仓Top50.csv')
+    # top_holdings.head(50).to_csv(output_top50, index=False, encoding='utf-8-sig')
+    
+    print(f"✨ ABC 分析完成！报告已存入: {REPORT_DIR}")
 
 if __name__ == "__main__":
     run_abc_analysis()
