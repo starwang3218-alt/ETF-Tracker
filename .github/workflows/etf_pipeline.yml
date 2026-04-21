@@ -11,6 +11,9 @@ on:
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
+    # 🌟 核心新增 1：必须开启写入权限，否则最后一步无法将数据存回仓库！
+    permissions:
+      contents: write 
 
     steps:
       - name: 1. 拉取最新代码
@@ -38,9 +41,9 @@ jobs:
           python step2_clean_unified.py
         continue-on-error: true
 
-      - name: 6. 万剑归宗 (合并出带风险权重的大表)
+      - name: 6. 万剑归宗 (合并出带风险权重的大表并生成日期快照)
         run: |
-          python step3_merge_and_analyze.py  # 👈 这里改成了我们今天写的最新脚本名
+          python step3_merge_and_analyze.py
         continue-on-error: true
 
       - name: 7.1 漏网之鱼排查与生成通缉令
@@ -51,18 +54,44 @@ jobs:
         run: python step5_abc_analysis.py
         continue-on-error: true
 
-      # - name: 7.3 生成量价合力终极榜单 (暂不开启，后续对接价格 API 再跑)
-      #   run: python step6_price_volume.py
-      #   continue-on-error: true
+      # 🌟 核心新增 2：加入调仓雷达计算
+      - name: 7.3 探测机构调仓异动 (Delta 计算)
+        run: python step6_calculate_delta.py
+        continue-on-error: true
+
+      # 🌟 核心新增 3：追加历史总账
+      - name: 7.4 沉淀历史数据 (更新 Time Series)
+        run: python step7_update_history.py
+        continue-on-error: true
 
       - name: 8. 📤 上传终极数据包与研报供下载
         uses: actions/upload-artifact@v4
         with:
           name: ETF-Master-Data-And-Reports
           path: |
-            data/master_holdings_analyzed.csv     # 👈 我们包含权重和风险扫描的终极分析表
-            data/data_freshness_report.csv        # 👈 每天必须看的质检报告
-            data/cleaned/                         # 备份单只清洗表
+            data/master_holdings_analyzed.csv     # 分析主表
+            data/master_holdings_20*.csv          # 🌟 顺便把生成的日期快照也打包供下载
+            data/data_freshness_report.csv        # 质检报告
+            data/holdings_delta_report.csv        # 🌟 调仓雷达榜单
+            data/holdings_time_series.csv         # 🌟 历史趋势总账
+            data/cleaned/                         
             reports/
             需要手动下载的ETF.txt
           retention-days: 15
+
+      # 🌟 核心新增 4：将数据永久刻入代码库，实现“跨天记忆”
+      - name: 9. 🤖 自动提交数据回仓库 (实现跨天记忆)
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # 将新生成的日期快照、雷达报告和历史总账加入 Git 追踪
+          git add data/master_holdings_20*.csv
+          git add data/master_holdings_latest.csv
+          git add data/holdings_delta_report.csv
+          git add data/holdings_time_series.csv
+          
+          # 检查是否有文件改动，如果有，则提交并推送到远端仓库
+          git diff --quiet && git diff --staged --quiet || (git commit -m "auto: 更新持仓快照与趋势总账 [$(date +'%Y-%m-%d')]" && git push)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
