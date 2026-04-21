@@ -1,12 +1,12 @@
 name: 每日 ETF 持仓自动化流水线
 
 on:
-  workflow_dispatch: # 保留手动按钮，想随时跑就随时点
   schedule:
-    # 0 7 代表 UTC 7:00 (北京时间 15:00)
-    # * * 代表每个月、每一天
-    # 2-6 代表星期二到星期六
+    # 第一波：北京时间 17:00 (UTC 7:00) - 抓取 iShares, Invesco 等大部分机构
     - cron: '0 7 * * 2-6'
+    # 第二波：北京时间 23:00 (UTC 14:00) - 抓取 Vanguard 等延迟更新的机构
+    - cron: '0 14 * * 2-6'
+  workflow_dispatch: # 手动按钮依然保留
 
 jobs:
   build-and-run:
