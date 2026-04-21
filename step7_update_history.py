@@ -5,69 +5,98 @@ import datetime
 
 # --- 配置区 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# 历史台账文件名 [cite: 1]
 HISTORY_FILE = os.path.join(BASE_DIR, 'data', 'holdings_time_series.csv')
 
 def get_latest_snapshot():
-    """🌟 智能搜索：自动在 data 目录下寻找日期最晚的那份快照"""
+    """🌟 智能搜索：自动在 data 目录下寻找日期最晚的那份快照 [cite: 1, 2]"""
     search_pattern = os.path.join(BASE_DIR, 'data', 'master_holdings_20*.csv')
     all_snapshots = glob.glob(search_pattern)
-    
-    if not all_snapshots:
-        # 如果找不到带日期的，最后尝试找一下 latest 副本
-        latest_fallback = os.path.join(BASE_DIR, 'data', 'master_holdings_latest.csv')
-        if os.path.exists(latest_fallback):
-            return latest_fallback
-        return None
-    
-    # 按文件名排序，取最后一个（日期最新）
+    if not all_snapshots: return None
     all_snapshots.sort(reverse=True)
     return all_snapshots[0]
 
 def update_history():
-    print("📈 正在更新历史趋势台账...")
+    print("📈 正在更新历史趋势总账 (全市场聚合版)...")
     
-    # 🌟 动态获取今天生成的最新文件路径
     input_file = get_latest_snapshot()
-    
     if not input_file:
-        print("❌ 错误：找不到任何 master_holdings 开头的分析文件，请先运行 step3。")
+        print("❌ 错误：找不到任何数据源，请先运行前面的步骤。")
         return
 
-    print(f"📂 正在读取数据源: {os.path.basename(input_file)}")
+    print(f"📂 正在处理数据源: {os.path.basename(input_file)}")
     
-    # 1. 读取数据
+    # 1. 读取底表 (包含了所有 ETF 的持仓明细和价格)
     df_today = pd.read_csv(input_file)
     
-    # 2. 提取 Record_Date (我们以文件名的日期或今天作为记录日)
-    # 尝试从文件名提取日期，如果提取不到则用今天
+    # 2. 提取 Record_Date [cite: 3]
     try:
         record_date = os.path.basename(input_file).split('_')[-1].replace('.csv', '')
-        # 简单校验格式是否为 YYYY-MM-DD
         datetime.datetime.strptime(record_date, '%Y-%m-%d')
     except:
         record_date = datetime.datetime.now().strftime('%Y-%m-%d')
-    
-    # 3. 提取核心列并去重
-    today_snapshot = df_today[['Holding_Ticker', 'Total_Market_Shares']].drop_duplicates().copy()
-    today_snapshot['Record_Date'] = record_date
-    today_snapshot = today_snapshot[['Record_Date', 'Holding_Ticker', 'Total_Market_Shares']]
 
-    # 4. 读写追加逻辑
+    # ================= 🌟 核心修改：聚合与字段保留 =================
+    # 根据你的截图要求，我们需要：
+    # - 聚合：按 Holding_Ticker 分组，Shares(持股数) 求和
+    # - 保留：Price, Open, High, Low, Volume, VWAP
+    
+    # 定义聚合规则
+    # 注意：持股数求和得到 Total_Market_Shares，行情数据对同一股票是一样的，取第一个即可
+    agg_rules = {
+        'Shares': 'sum',
+        'Price': 'first',
+        'Open': 'first',
+        'High': 'first',
+        'Low': 'first',
+        'Volume': 'first',
+        'VWAP': 'first'
+    }
+    
+    # 过滤掉底表中可能不存在的列
+    actual_agg = {k: v for k, v in agg_rules.items() if k in df_today.columns}
+    
+    # 执行聚合
+    df_agg = df_today.groupby('Holding_Ticker').agg(actual_agg).reset_index()
+    
+    # 重命名列名以匹配你的截图 [cite: 3]
+    df_agg = df_agg.rename(columns={
+        'Holding_Ticker': 'Holding_T',
+        'Shares': 'Total_Market_Shares'
+    })
+    
+    # 注入日期
+    df_agg['Record_Date'] = record_date
+    
+    # 整理最终列顺序 (严格匹配你的截图顺序)
+    final_cols = [
+        'Record_Date', 'Holding_T', 'Total_Market_Shares', 
+        'Price', 'Open', 'High', 'Low', 'Volume', 'VWAP'
+    ]
+    
+    # 只提取存在的列
+    df_final_today = df_agg[[col for col in final_cols if col in df_agg.columns]].copy()
+    # =========================================================
+
+    # 3. 读写追加与“去重覆盖”逻辑 [cite: 4, 5]
     if os.path.exists(HISTORY_FILE):
         df_history = pd.read_csv(HISTORY_FILE)
         
-        # 🛡️ 防重检查
-        if record_date in df_history['Record_Date'].astype(str).values:
-            print(f"⚠️ 日期 {record_date} 的快照已在历史台账中，跳过追加。")
-            return
-            
-        df_final = pd.concat([df_history, today_snapshot], ignore_index=True)
+        # 将历史表和今天的新聚合表拼接
+        df_combined = pd.concat([df_history, df_final_today], ignore_index=True)
+        
+        # 🌟 关键：按 [日期 + 股票代码] 去重，保留最后一次的数据 (keep='last')
+        # 这样即使一天运行多次，也只会保留最后一次的最新聚合结果
+        df_combined = df_combined.drop_duplicates(
+            subset=['Record_Date', 'Holding_T'], 
+            keep='last'
+        )
     else:
-        df_final = today_snapshot
+        df_combined = df_final_today
 
-    # 5. 落地保存
-    df_final.to_csv(HISTORY_FILE, index=False, encoding='utf-8-sig')
-    print(f"✅ 历史台账已更新！日期：{record_date}，当前库内共 {len(df_final)} 条记录。")
+    # 4. 落地保存
+    df_combined.to_csv(HISTORY_FILE, index=False, encoding='utf-8-sig')
+    print(f"✅ 全市场历史台账已更新！日期：{record_date}，共记录 {len(df_final_today)} 只标的总量。")
 
 if __name__ == "__main__":
     update_history()
