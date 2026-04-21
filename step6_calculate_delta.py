@@ -1,92 +1,89 @@
 import pandas as pd
 import os
-import numpy as np
+import glob
+import re
 
-# --- 配置区 ---
+# --- 统一路径管理 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# 假设你已经手动（或通过脚本）保留了这两天的文件
-FILE_YESTERDAY = os.path.join(BASE_DIR, 'data', 'master_holdings_yesterday.csv')
-FILE_TODAY = os.path.join(BASE_DIR, 'data', 'master_holdings_today.csv')
-OUTPUT_FILE = os.path.join(BASE_DIR, 'data', 'holdings_delta_report.csv')
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+REPORT_DIR = os.path.join(BASE_DIR, 'reports') 
 
-def calculate_daily_delta():
+# 确保文件夹存在
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(REPORT_DIR, exist_ok=True)
+
+def run_delta_calculator():
     print("🚀 启动机构调仓对比引擎 (Delta Calculator)...")
     
-    if not os.path.exists(FILE_YESTERDAY) or not os.path.exists(FILE_TODAY):
-        print("❌ 错误：找不到对比文件！请确保 yesterday 和 today 的表都在 data 目录下。")
+    # 1. 自动寻找 data 文件夹下所有符合命名的快照
+    file_pattern = os.path.join(DATA_DIR, 'master_holdings_*.csv')
+    all_files = glob.glob(file_pattern)
+    
+    # 排除掉 analyzed 表，只留带日期的
+    snapshot_files = [f for f in all_files if re.search(r'\d{4}-\d{2}-\d{2}', f)]
+    
+    # 按文件名（日期）进行降序排列
+    snapshot_files.sort(reverse=True)
+
+    if len(snapshot_files) < 2:
+        print(f"❌ 错误：持仓历史记录不足（当前只有 {len(snapshot_files)} 个快照）。")
+        print("提示：需要至少两个日期的 master_holdings_YYYY-MM-DD.csv 文件才能计算增量。")
         return
 
-    # 1. 读取两天的总表
-    print("📂 正在加载 T-1 (昨日) 与 T0 (今日) 数据表...")
-    df_yesterday = pd.read_csv(FILE_YESTERDAY)
-    df_today = pd.read_csv(FILE_TODAY)
+    # 锁定最近的两个日期
+    today_file = snapshot_files[0]
+    prev_file = snapshot_files[1]
 
-    # 2. 提取并去重：我们只需要股票代码和它的“全市场总股数”
-    # 虽然大表有很多行，但同一只股票的 Total_Market_Shares 是一样的，直接去重即可
-    y_shares = df_yesterday[['Holding_Ticker', 'Total_Market_Shares']].drop_duplicates()
-    t_shares = df_today[['Holding_Ticker', 'Total_Market_Shares']].drop_duplicates()
+    print(f"📈 正在对比：\n   最新表：{today_file}\n   上期表：{prev_file}")
 
-    # 重命名列，方便合并后区分
-    y_shares.rename(columns={'Total_Market_Shares': 'Shares_Yesterday'}, inplace=True)
-    t_shares.rename(columns={'Total_Market_Shares': 'Shares_Today'}, inplace=True)
+    # 2. 读取数据并【聚合去重】（核心防爆逻辑）
+    df_today = pd.read_csv(today_file)
+    df_prev = pd.read_csv(prev_file)
 
-    # 3. 核心：双表对撞 (Outer Join)
-    # 使用 outer join 可以捕获今天新买入的(昨天没有)，以及今天全清仓的(今天没有)
-    print("🧮 正在执行双表对撞合并...")
-    df_delta = pd.merge(y_shares, t_shares, on='Holding_Ticker', how='outer')
+    # 🚨 修复：只用真实存在的列作为主键
+    group_cols = ['ETF_Ticker', 'Holding_Ticker']
+    
+    # 将同一只 ETF 里，可能分拆成好几行的同一只股票股数加总
+    df_today_grouped = df_today.groupby(group_cols, dropna=False)['Shares'].sum().reset_index()
+    df_prev_grouped = df_prev.groupby(group_cols, dropna=False)['Shares'].sum().reset_index()
 
-    # 将缺失值填充为 0 (昨天没有的，昨天股数为0；今天没有的，今天股数为0)
-    df_delta['Shares_Yesterday'] = df_delta['Shares_Yesterday'].fillna(0)
+    # 3. 执行对撞分析 (绝对的一对一)
+    df_delta = pd.merge(
+        df_today_grouped, 
+        df_prev_grouped, 
+        on=group_cols, 
+        how='outer', 
+        suffixes=('_Today', '_Prev')
+    )
+
+    # 4. 数据清洗与计算
     df_delta['Shares_Today'] = df_delta['Shares_Today'].fillna(0)
-
-    # ... 前面的代码不变 ...
-
-    # 4. 计算绝对调仓与变化率
-    # 🌟 核心修复：把结果四舍五入到小数点后 4 位，抹平计算机浮点误差
-    df_delta['Net_Change_Shares'] = (df_delta['Shares_Today'] - df_delta['Shares_Yesterday']).round(4)
+    df_delta['Shares_Prev'] = df_delta['Shares_Prev'].fillna(0)
     
-    # 计算百分比变化 (避免分母为 0)
-    df_delta['Change_Percent'] = np.where(
-        df_delta['Shares_Yesterday'] == 0, 
-        np.inf, 
-        df_delta['Net_Change_Shares'] / df_delta['Shares_Yesterday']
-    )
-
-    # 5. 智能动作打标 (Action Labels)
-    def label_action(row):
-        if row['Shares_Yesterday'] == 0 and row['Shares_Today'] > 0:
-            return "🔥 新建仓"
-        elif row['Shares_Yesterday'] > 0 and row['Shares_Today'] == 0:
-            return "💀 遭清仓"
-        elif row['Net_Change_Shares'] > 0:
-            return "🟢 加仓"
-        elif row['Net_Change_Shares'] < 0:
-            return "🔴 减仓"
-        else:
-            return "⚪ 无变动"
-
-    df_delta['Action'] = df_delta.apply(label_action, axis=1)
-
-    # 6. 排序整理
-    df_delta.sort_values(by='Net_Change_Shares', ascending=False, inplace=True)
+    # 计算变动股数，并使用 round(4) 抹除计算机底层的浮点数微小误差
+    df_delta['Delta_Shares'] = (df_delta['Shares_Today'] - df_delta['Shares_Prev']).round(4)
     
-    df_delta['Change_Percent_Str'] = df_delta['Change_Percent'].apply(
-        lambda x: "NEW" if x == np.inf else (f"{x*100:.4f}%" if pd.notna(x) else "0.00%")
-    )
+    # 只保留真正发生实质变动的记录
+    df_delta = df_delta[df_delta['Delta_Shares'] != 0].copy()
 
-    # 🌟 核心修复：过滤掉变动小于 0.01 股的数学噪音！只抓真正发生调仓的标的！
-    df_active = df_delta[df_delta['Net_Change_Shares'].abs() >= 0.6].copy()
+    # ================= 补充最新股价计算金额 =================
+    if 'Price' in df_today.columns:
+        # 取每个股票的最新价格字典
+        price_dict = df_today.drop_duplicates('Holding_Ticker').set_index('Holding_Ticker')['Price']
+        # 映射回对撞报告中
+        df_delta['Price'] = df_delta['Holding_Ticker'].map(price_dict)
+        
+        # 计算资金变动（如果有缺失价格，按0算）
+        df_delta['Market_Value_Delta'] = df_delta['Delta_Shares'] * df_delta['Price'].fillna(0)
+        # 按绝对金额（无论买卖，动作最大的放前面）排序
+        df_delta = df_delta.reindex(df_delta['Market_Value_Delta'].abs().sort_values(ascending=False).index)
 
-    # ... 后面的保存代码不变 ...
-
-    # 7. 保存输出
-    cols = ['Action', 'Holding_Ticker', 'Shares_Yesterday', 'Shares_Today', 'Net_Change_Shares', 'Change_Percent_Str']
-    df_active = df_active[cols]
+    # 5. 保存结果 (统一存到 reports 文件夹)
+    output_path = os.path.join(REPORT_DIR, 'holdings_delta_report.csv')
+    df_delta.to_csv(output_path, index=False, encoding='utf-8-sig')
     
-    df_active.to_csv(OUTPUT_FILE, index=False, encoding='utf-8-sig')
-    
-    print(f"✨ 调仓计算完毕！共有 {len(df_active)} 只股票发生异动。")
-    print(f"📊 调仓雷达榜单已保存至: {OUTPUT_FILE}")
+    print(f"✨ 成功！调仓报告已生成：{output_path}")
+    print(f"📊 本次共发现 {len(df_delta)} 条持仓变动记录。")
 
 if __name__ == "__main__":
-    calculate_daily_delta()
+    run_delta_calculator()
