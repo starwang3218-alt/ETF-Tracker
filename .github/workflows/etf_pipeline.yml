@@ -62,13 +62,13 @@ jobs:
         run: python step7_update_history.py
         continue-on-error: true
 
-      - name: 8. 📤 上传终极数据包与研报供下载
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ETF-Master-Data-And-Reports
+          name: ETF-Daily-Results
           path: |
-            data/*.csv              # 直接打包 data 下所有 csv，防漏
-            reports/*.csv           # 🌟 直接打包 reports 下所有报告
+            data/*.csv
+            reports/*.csv
             需要手动下载的ETF.txt
           retention-days: 15
 
