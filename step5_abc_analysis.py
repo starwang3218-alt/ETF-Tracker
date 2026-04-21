@@ -1,12 +1,30 @@
 import pandas as pd
 import os
 
+# --- 核心路径修复 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MASTER_FILE = os.path.join(BASE_DIR, 'data', 'merged', 'master_holdings.csv')
-REPORT_DIR = os.path.join(BASE_DIR, 'reports')
-os.makedirs(REPORT_DIR, exist_ok=True)
+# 锁定你刚刚在 Step 3 中生成的“看板表”
+MASTER_FILE = os.path.join(BASE_DIR, 'data', 'master_holdings_analyzed.csv')
 
 def run_abc_analysis():
+    print(f"🚀 正在从 {MASTER_FILE} 读取数据进行权重排名...")
+    
+    if not os.path.exists(MASTER_FILE):
+        print(f"❌ 找不到底表: {MASTER_FILE}")
+        return
+
+    # 注意：你说过这里用 utf-8-sig 以防乱码
+    df = pd.read_csv(MASTER_FILE, encoding='utf-8-sig')
+    
+    # ... 后面的分析逻辑保持不变 ...
+    
+    # 记得输出时也保持在 data 目录下
+    output_path = os.path.join(BASE_DIR, 'data', 'abc_analysis_results.csv')
+    df.to_csv(output_path, index=False, encoding='utf-8-sig')
+    print(f"✨ ABC 分析完成，结果已存入: {output_path}")
+
+if __name__ == "__main__":
+    run_abc_analysis()
     print("🚀 启动 ABC 核心分析仪...")
     df = pd.read_csv(MASTER_FILE, encoding='utf-8-sig')
     
