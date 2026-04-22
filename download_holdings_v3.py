@@ -142,21 +142,15 @@ def is_content_valid(file_path: Path) -> bool:
 
     suffix = file_path.suffix.lower()
 
-    # CSV / TXT：按文本严格校验
     if suffix in [".csv", ".txt"]:
         try:
             with open(file_path, "r", encoding="utf-8-sig", errors="ignore") as f:
                 lines = [line.strip() for line in f.readlines() if line.strip()]
 
-                if not lines:
-                    return False
-
                 content_sample = "".join(lines[:5]).lower()
-
                 if "<html" in content_sample or "<body" in content_sample:
                     return False
 
-                # 重点拦截：cusip 垃圾响应
                 if content_sample.startswith("{") or '"cusip":' in content_sample.replace(" ", ""):
                     return False
 
@@ -165,40 +159,14 @@ def is_content_valid(file_path: Path) -> bool:
         except Exception:
             return False
 
-    # PDF：继续严格一点
     if suffix == ".pdf" and size < 5000:
         return False
 
-    # Excel：放宽到 2500
     if suffix in [".xlsx", ".xls"] and size < 2500:
         return False
 
-    # BIN：精细判断，不再简单按大小误杀
-    if suffix == ".bin":
-        if size < 1000:
-            return False
-
-        # 尝试按文本读取，识别那种“只有一行且 A1/cell 内容含 cusip”的垃圾返回
-        try:
-            with open(file_path, "r", encoding="utf-8-sig", errors="ignore") as f:
-                lines = [line.strip() for line in f.readlines() if line.strip()]
-
-            if lines:
-                first_line = lines[0].lower().replace(" ", "")
-                joined = "".join(lines[:3]).lower().replace(" ", "")
-
-                # 典型垃圾：只有 1 行，并且首格/整行包含 cusip
-                if len(lines) == 1 and "cusip" in first_line:
-                    return False
-
-                # 也拦截 JSON/伪表格报错
-                if joined.startswith("{") or '"cusip":' in joined or "cusip" in first_line:
-                    # 只有极少文本且像错误返回，判垃圾
-                    if len(lines) <= 2:
-                        return False
-        except Exception:
-            # 读不成文本，通常说明是正常二进制，放过
-            pass
+    if suffix == ".bin" and size < 1000:
+        return False
 
     return True
 
@@ -1315,7 +1283,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--overwrite", action="store_true", help="如果文件已存在则覆盖")
     parser.add_argument("--no-dynamic", action="store_true", help="禁用 Playwright 动态回退，仅做静态解析")
     parser.add_argument("--debug", action="store_true", help="打印调试信息，便于定位失败链接")
-    parser.add_argument("--concurrency", type=int, default=5, help="并发数，默认 5")
+    parser.add_argument("--concurrency", type=int, default=4, help="并发数，默认 4")
     return parser
 
 
