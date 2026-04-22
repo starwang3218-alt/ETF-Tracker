@@ -66,6 +66,12 @@ jobs:
         run: python step7_update_history.py
         continue-on-error: true
 
+      # ================= 🌟 新增：数据碰撞环节 =================
+      - name: 7.5 生成机构对撞报告 (挖掘 0->1 新开仓与机构异动)
+        run: python step8_generate_report.py
+        continue-on-error: true
+      # =========================================================
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -90,6 +96,6 @@ jobs:
           git add reports/*.csv
           
           # 判断如果有改动就提交，没改动就跳过，完美解决报错
-          git diff --quiet && git diff --staged --quiet || (git commit -m "auto: 更新带股价持仓快照与分析报告 [$(date +'%Y-%m-%d')]" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "auto: 更新带股价持仓快照与数据碰撞报告 [$(date +'%Y-%m-%d')]" && git push)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
