@@ -2,9 +2,13 @@ name: 每日 ETF 持仓自动化流水线
 
 on:
   schedule:
-    - cron: '0 9 * * 2-6'
+    # 1. 北京时间 19:30 (UTC 11:30)，周二至周六运行
+    - cron: '30 11 * * 2-6'
+    
+    # 2. 北京时间 23:00 (UTC 15:00)，周二至周六运行
     - cron: '0 15 * * 2-6'
-  workflow_dispatch:
+    
+  workflow_dispatch: # 保留手动触发按钮
 
 jobs:
   build-and-run:
