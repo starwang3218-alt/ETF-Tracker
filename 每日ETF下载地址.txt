@@ -203,7 +203,7 @@ https://www.ssga.com/us/en/intermediary/etfs/library-content/products/fund-data/
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-equal-weight-materials-etf.html	RSPM
 https://www.ishares.com/us/products/239544/ishares-real-estate-50-etf/1467271812596.ajax?fileType=csv&fileName=USRT_holdings&dataType=fund	USRT
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-equal-weight-industrials-etf.html	RSPN
-https://assets.globalxetfs.com/funds/holdings/gxpt_full-holdings_20260417.csv 		GXPTMSCI 信息技术
+https://assets.globalxetfs.com/funds/holdings/gxpt_full-holdings_20260417.csv 		GXPT
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-equal-weight-real-estate-etf.html	RSPR
 https://www.ishares.com/us/products/294315/ishares-u-s-infrastructure-etf/1467271812596.ajax?fileType=csv&fileName=IFRA_holdings&dataType=fund	IFRA
 https://www.invesco.com/us/en/financial-products/etfs/invesco-sp-500-equal-weight-consumer-staples-etf.html	RSPS
