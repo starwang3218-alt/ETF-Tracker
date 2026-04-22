@@ -184,7 +184,6 @@ https://www.ishares.com/us/products/284609/ishares-msci-usa-small-cap-min-vol-fa
 https://www.invesco.com/us/en/financial-products/etfs/invesco-global-listed-private-equity-etf.html	PSP
 https://www.ishares.com/us/products/239586/ishares-morningstar-smallcap-etf/1467271812596.ajax?fileType=csv&fileName=ISCB_holdings&dataType=fund	ISCB
 https://www.invesco.com/us/en/financial-products/etfs/invesco-dorsey-wright-technology-momentum-etf.html	PTF
-https://www.ishares.com/us/products/336267/ishares-s-p-500-buywrite-etf/1467271812596.ajax?fileType=csv&fileName=IVVW_holdings&dataType=fund	IVVW
 https://www.invesco.com/us/en/financial-products/etfs/invesco-dorsey-wright-healthcare-momentum-etf.html	PTH
 https://www.ishares.com/us/products/339775/ishares-nasdaq-top-30-stocks-etf/1467271812596.ajax?fileType=csv&fileName=QTOP_holdings&dataType=fund	QTOP
 https://www.invesco.com/us/en/financial-products/etfs/invesco-dorsey-wright-utilities-momentum-etf.html	PUI
