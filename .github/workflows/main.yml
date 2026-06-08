@@ -1,14 +1,14 @@
 #name: Daily ETF Quant Pipeline
 
-on:
+#on:
   # schedule:
   #   - cron: '30 22 * * 1-5'  # 暂时关掉自动运行，防止半夜报错
-  workflow_dispatch:          # 仍然保留手动测试按钮
+  #workflow_dispatch:          # 仍然保留手动测试按钮
 
-permissions:
+#permissions:
   contents: write
 
-jobs:
+#jobs:
   build-and-run:
     runs-on: ubuntu-latest
 
