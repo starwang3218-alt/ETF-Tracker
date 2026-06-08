@@ -1,51 +1,112 @@
-#name: Daily ETF Quant Pipeline
+name: Backfill iShares Holdings
 
-#on:
-  # schedule:
-  #   - cron: '30 22 * * 1-5'  # 暂时关掉自动运行，防止半夜报错
-  #workflow_dispatch:          # 仍然保留手动测试按钮
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: "Start date, e.g. 2026-01-01"
+        required: true
+        default: "2026-01-01"
+      end_date:
+        description: "End date, e.g. 2026-03-31"
+        required: true
+        default: "2026-03-31"
+      url_file:
+        description: "iShares URL key file in repo"
+        required: true
+        default: "ishares_holding_urls.txt"
+      workers:
+        description: "Downloader workers"
+        required: true
+        default: "6"
+      weekdays_only:
+        description: "Use --weekdays-only"
+        required: true
+        type: choice
+        options:
+          - "true"
+          - "false"
+        default: "true"
+      cleanup_empty:
+        description: "Run iShares empty-template cleanup after download"
+        required: true
+        type: choice
+        options:
+          - "true"
+          - "false"
+        default: "true"
 
-#permissions:
-  contents: write
-
-#jobs:
-  build-and-run:
+jobs:
+  download:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
 
     steps:
-    - name: 📥 抓取仓库代码与历史数据
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0 
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: ⚙️ 配置 Python 环境
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: 📦 安装核心依赖包
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Download iShares holdings
+        env:
+          PYTHONUNBUFFERED: "1" # 强制 Python 实时输出日志，避免控制台假死
+        shell: bash
+        run: |
+          set -euo pipefail
 
-    - name: 🚀 执行量化处理流 (全自动四步走)
-      run: |
-        python step1_download.py
-        python step2_clean.py
-        python step3_aggregate.py
-        python step4_calculate_delta.py
+          FLAGS=""
+          if [ "${{ inputs.weekdays_only }}" = "true" ]; then
+            FLAGS="$FLAGS --weekdays-only"
+          fi
 
-    - name: 💾 将异动报告推送回 GitHub
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "Quant Bot"
-        
-        # 1. 尝试把 data 文件夹下所有符合白名单的 CSV 都添加进来
-        # 即使 Delta 报告没生成，只要有 Master_Holdings 也会被添加
-        git add data/*.csv || echo "没有发现新的 CSV 文件"
-        
-        # 2. 提交更改。|| true 的作用是：即使没有什么可提交的（比如数据没变化），也不要让程序崩溃
-        git commit -m "🤖 自动更新: 机构持仓底牌与异动监控" || echo "今天数据无变化，跳过提交"
-        
-        # 3. 推送回仓库
-        git push
+          # 增加了 -u 参数，并将 print-every 改为 1，方便排查是否被封 IP
+          python -u download_ishares_history.py \
+            --root "$GITHUB_WORKSPACE/out" \
+            --url-file "${{ inputs.url_file }}" \
+            --start "${{ inputs.start_date }}" \
+            --end "${{ inputs.end_date }}" \
+            --workers "${{ inputs.workers }}" \
+            --min-sleep 0.5 \
+            --max-sleep 2.0 \
+            --print-every 25 \
+            $FLAGS
+
+      - name: Cleanup empty iShares template files
+        if: ${{ always() && inputs.cleanup_empty == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f cleanup_ishares_empty_files_v2.py ]; then
+            echo "cleanup_ishares_empty_files_v2.py not found; skip cleanup."
+          elif [ -d "$GITHUB_WORKSPACE/out/data/vendors/ishares/raw" ]; then
+            python cleanup_ishares_empty_files_v2.py \
+              --root "$GITHUB_WORKSPACE/out" \
+              --max-bytes 12288 \
+              --delete
+          else
+            echo "No iShares raw directory found; skip cleanup."
+          fi
+
+      - name: Pack result even if previous step failed
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p package
+          if [ -d "$GITHUB_WORKSPACE/out/data/vendors/ishares" ]; then
+            cd "$GITHUB_WORKSPACE/out"
+            tar -czf "$GITHUB_WORKSPACE/package/ishares_${{ inputs.start_date }}_${{ inputs.end_date }}.tar.gz" data/vendors/ishares
+          else
+            echo "No downloaded files found." > "$GITHUB_WORKSPACE/package/NO_FILES_DOWNLOADED.txt"
+          fi
+
+      - name: Upload artifact even if previous step failed
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ishares_${{ inputs.start_date }}_${{ inputs.end_date }}
+          path: package/*
+          retention-days: 7
